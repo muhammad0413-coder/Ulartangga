@@ -50,8 +50,16 @@
       touch-action: manipulation;
     }
     .pawn {
-      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+    @keyframes pawnHop {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.32) translateY(-6px); }
+    }
+    .pawn-stepping {
+      animation: pawnHop 0.3s ease;
+      z-index: 40;
     }
     @keyframes diceRoll {
       0% { transform: rotate(0deg) scale(1); }
@@ -200,98 +208,68 @@
         </div>
       </div>
 
-      <!-- ARENA PAPAN ULAR TANGGA (TERSEMBUNYI SAAT SETUP) -->
-      <div id="arenaPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-7 items-start">
+      <!-- PANEL ARENA PERMAINAN (PAPAN UTAMA DI TENGAH + DADU KECIL & 4 KARTU SISWA DI BAWAH) -->
+      <div id="arenaPanel" class="hidden flex flex-col justify-between gap-2 sm:gap-2.5">
 
-        <!-- KOLOM KIRI: PAPAN PERMAINAN (7 KOLOM) -->
-        <div class="lg:col-span-7 bg-white p-3 sm:p-5 xl:p-6 rounded-3xl shadow-lg border border-sky-100">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 xl:mb-4">
-            <div class="flex items-center gap-2">
-              <span class="px-3 py-1.5 rounded-xl bg-sky-100 text-sky-800 text-xs xl:text-sm font-bold" id="badgeSessionFilter">Kelas 4 • Semua Mapel</span>
-              <span class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs xl:text-sm font-bold" id="badgeRemainingPool">Sisa Antrean: 50 Soal</span>
-            </div>
-            <div class="flex items-center gap-3 text-xs xl:text-sm font-semibold text-slate-500">
-              <span class="inline-flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-sm bg-emerald-400 inline-block"></span> Tangga Naik</span>
-              <span class="inline-flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-sm bg-rose-400 inline-block"></span> Ular Turun</span>
-            </div>
+        <!-- BAR STATUS RINGKAS DI ATAS PAPAN -->
+        <div class="bg-white/95 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-sm border border-sky-100 flex items-center justify-between gap-2 text-[11px] sm:text-xs xl:text-sm">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="badgeSessionFilter" class="px-2.5 py-0.5 rounded-lg bg-sky-100 text-sky-800 font-bold truncate">4 Siswa • Kelas 4 SD</span>
+            <span id="usedCountBadge" class="hidden sm:inline-block px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold shrink-0">🛡️ 0 Terpakai</span>
+          </div>
+          <button onclick="confirmRestartSession()" class="ifp-touch-target px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition cursor-pointer shrink-0">
+            🔄 Pengaturan / Ulang
+          </button>
+        </div>
+
+        <!-- BAGIAN TENGAH: PAPAN ULAR TANGGA UTAMA (DIPERBESAR MEMENUHI LAYAR IFP) -->
+        <div class="bg-white p-2 sm:p-3 xl:p-4 rounded-3xl shadow-lg border border-sky-100 w-full relative">
+          <!-- Banner Status Pergerakan Pion di Atas Papan -->
+          <div id="boardMoveBanner" class="hidden mb-2 px-4 py-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 text-white font-display font-bold text-xs sm:text-base xl:text-lg text-center shadow-md animate-pop">
+            🦁 Siswa 1 melangkah maju!
           </div>
 
-          <!-- WRAPPER PAPAN + SVG OVERLAY (Dioptimalkan untuk tinggi layar IFP 1080p/4K) -->
-          <div class="relative w-full max-w-[70vh] mx-auto rounded-2xl overflow-hidden border-2 xl:border-4 border-slate-800 shadow-inner bg-amber-50">
+          <div class="relative w-full max-w-[70vh] sm:max-w-[73vh] xl:max-w-[75vh] mx-auto rounded-2xl overflow-hidden border-2 xl:border-4 border-slate-800 shadow-inner bg-amber-50">
             <div id="boardGrid" class="board-grid w-full"></div>
             <!-- SVG Garis Ular & Tangga -->
             <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
             <!-- Layer Bidak Pemain -->
             <div id="pawnsLayer" class="absolute inset-0 w-full h-full pointer-events-none z-20"></div>
-          </div>
-        </div>
 
-        <!-- KOLOM KANAN: INFORMASI GILIRAN, KLASEMEN, RIWAYAT & TOMBOL AKSI DI BAGIAN BAWAH (5 KOLOM) -->
-        <div class="lg:col-span-5 flex flex-col justify-between space-y-4 xl:space-y-5">
-
-          <!-- Bagian Atas: Info Pemain Aktif, Klasemen & Log Soal -->
-          <div class="space-y-4 xl:space-y-5">
-            <!-- Kartu Giliran Saat Ini -->
-            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
-              <div class="flex items-center justify-between mb-2.5">
-                <span class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-400">Giliran Saat Ini</span>
-                <span id="activeTurnBadge" class="px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs xl:text-sm font-bold">Giliran 1/4 🎯</span>
-              </div>
-
-              <div id="activePlayerBanner" class="p-4 xl:p-5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-between shadow-md">
-                <div class="flex items-center gap-3.5">
-                  <div id="activePlayerAvatar" class="w-12 h-12 xl:w-16 xl:h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl xl:text-4xl font-bold">
-                    🦁
-                  </div>
-                  <div>
-                    <h3 id="activePlayerName" class="font-display font-bold text-xl xl:text-2xl leading-tight">Pemain 1</h3>
-                    <p id="activePlayerPosText" class="text-xs xl:text-sm text-sky-100 mt-0.5">Posisi Kotak: 1 • Skor: 0</p>
-                  </div>
+            <!-- OVERLAY DADU BESAR TRANSPARAN DI TENGAH PAPAN SAAT DILEMPAR -->
+            <div id="boardBigDiceOverlay" class="hidden absolute inset-0 z-30 bg-transparent pointer-events-none flex flex-col items-center justify-center p-4">
+              <div class="bg-white/60 backdrop-blur-[2px] px-6 py-4 sm:px-8 sm:py-5 rounded-3xl shadow-xl border-2 border-amber-400/80 text-center space-y-2 animate-pop">
+                <div id="bigDicePlayerLabel" class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-indigo-900 drop-shadow-sm">Giliran Siswa 1</div>
+                <div id="diceBox" class="w-24 h-24 sm:w-32 sm:h-32 xl:w-36 xl:h-36 mx-auto rounded-3xl bg-amber-100/75 border-4 border-amber-500/85 shadow-lg flex items-center justify-center text-6xl sm:text-7xl xl:text-8xl font-display font-bold text-indigo-900 select-none">
+                  🎲
                 </div>
-              </div>
-            </div>
-
-            <!-- Papan Klasemen Pemain -->
-            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
-              <h3 class="font-display font-bold text-base xl:text-lg text-slate-800 mb-2.5">🏆 Posisi & Skor 4 Siswa</h3>
-              <div id="scoreboardList" class="space-y-2"></div>
-            </div>
-
-            <!-- Log Riwayat Soal Anti-Pengulangan -->
-            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
-              <div class="flex items-center justify-between mb-1.5">
-                <h3 class="font-display font-bold text-sm xl:text-base text-slate-800">🛡️ Log Riwayat ID Soal Sesi Ini</h3>
-                <span id="usedCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">0 Terpakai</span>
-              </div>
-              <div id="usedQuestionsLog" class="max-h-24 xl:max-h-28 overflow-y-auto space-y-1 pr-1 text-xs">
-                <div class="text-slate-400 italic py-1.5 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>
+                <div id="bigDiceStatusText" class="text-xs sm:text-base font-extrabold text-slate-900 drop-shadow-sm">Mengocok dadu...</div>
               </div>
             </div>
           </div>
-
-          <!-- Bagian Paling Bawah: Dadu & Semua Tombol Klik Ramah Jangkauan Siswa Kelas 1 SD -->
-          <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-xl border-2 border-amber-200 sticky bottom-2 z-20 space-y-3">
-            <div class="flex items-center gap-3.5 xl:gap-4">
-              <div id="diceBox" class="w-16 h-16 xl:w-20 xl:h-20 min-w-[4rem] xl:min-w-[5rem] xl:min-h-[5rem] rounded-2xl bg-amber-50 border-2 border-amber-300 shadow-inner flex items-center justify-center text-3xl xl:text-5xl font-display font-bold text-indigo-700 select-none shrink-0">
-                🎲
-              </div>
-              <div class="flex-1">
-                <p id="turnInstructionText" class="text-xs xl:text-sm text-slate-700 mb-2 font-semibold">
-                  Tekan tombol di bawah untuk melempar dadu!
-                </p>
-                <button id="rollDiceBtn" onclick="handleRollDice()" class="ifp-touch-target w-full py-4 xl:py-5 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-display font-bold text-lg xl:text-2xl shadow-lg shadow-amber-500/30 transition transform active:scale-95 cursor-pointer">
-                  🎲 Lempar Dadu & Ambil Soal
-                </button>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-slate-100 flex justify-end">
-              <button onclick="confirmRestartSession()" class="ifp-touch-target w-full sm:w-auto text-xs xl:text-sm font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl transition cursor-pointer">
-                🔄 Mulai Ulang / Pengaturan
-              </button>
-            </div>
-          </div>
-
         </div>
+
+        <!-- BAGIAN BAWAH: BAR DADU KECIL DI ATAS + EMPAT KARTU SISWA HORIZONTAL DI PALING BAWAH -->
+        <div class="w-full space-y-2">
+          <!-- Bar Kontrol Dadu Kecil Tepat di Atas Nama Siswa -->
+          <div class="bg-white/95 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-sm border border-amber-200 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="miniDiceTurnAvatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm sm:text-base shadow-sm shrink-0">🦁</span>
+              <div class="min-w-0">
+                <span id="miniDiceTurnText" class="font-display font-bold text-xs sm:text-sm xl:text-base text-slate-900 truncate block">Giliran Siswa 1</span>
+              </div>
+            </div>
+
+            <button id="rollDiceBtn" onclick="handleRollDice()" class="ifp-touch-target px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 text-white font-display font-bold text-xs sm:text-sm xl:text-base shadow-md shadow-amber-500/25 flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0">
+              <span id="miniDiceIcon" class="text-base sm:text-lg leading-none">🎲</span>
+              <span>Lempar Dadu</span>
+            </button>
+          </div>
+
+          <!-- Empat Kartu Siswa Sejajar Satu Baris Horizontal -->
+          <div id="scoreboardList" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));" class="gap-1.5 sm:gap-3 xl:gap-4 w-full"></div>
+        </div>
+
       </div>
     </section>
 
@@ -383,57 +361,61 @@
   </main>
 
   <!-- =========================================================
-       MODAL 1: KUIS AKTIF (SOAL DI ATAS, SEMUA TOMBOL JAWABAN DI BAWAH)
+       MODAL 1: POPUP PERTANYAAN TEPAT DI TENGAH LAYAR (HORISONTAL & VERTIKAL)
   ========================================================== -->
-  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-between p-3 sm:p-5 xl:p-8 overflow-y-auto">
-    <div class="bg-white w-full max-w-3xl xl:max-w-5xl mx-auto rounded-3xl shadow-2xl border border-sky-100 overflow-hidden animate-pop flex flex-col justify-between min-h-[85vh] xl:min-h-[82vh]">
+  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-5 xl:p-8 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl xl:max-w-4xl mx-auto rounded-3xl shadow-2xl border-2 border-sky-200 overflow-hidden animate-pop my-auto">
       
-      <!-- BAGIAN ATAS MODAL: HEADER & PERTANYAAN SOAL -->
-      <div>
-        <div class="bg-gradient-to-r from-indigo-600 to-sky-600 p-4 sm:p-5 xl:p-6 text-white flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2.5">
-            <span id="qModalIdBadge" class="px-3 py-1 rounded-lg bg-white/20 font-mono text-xs xl:text-sm font-bold">ID: MTK4-001</span>
-            <span id="qModalMetaBadge" class="px-3 py-1 rounded-lg bg-amber-400 text-slate-900 text-xs xl:text-sm font-bold">Kelas 4 • Matematika</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="qModalPlayerBadge" class="text-xs xl:text-sm font-bold bg-slate-900/30 px-3.5 py-1.5 rounded-full">Giliran: Pemain 1</span>
-          </div>
+      <!-- HEADER POPUP COLORFUL -->
+      <div class="bg-gradient-to-r from-indigo-600 via-sky-600 to-teal-500 p-3.5 sm:p-5 text-white flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span id="qModalNumberBadge" class="px-2.5 py-1 rounded-xl bg-white text-indigo-800 text-xs sm:text-sm font-extrabold shadow-sm">Soal #1</span>
+          <span id="qModalIdBadge" class="px-2.5 py-1 rounded-xl bg-white/20 font-mono text-[11px] sm:text-xs font-bold">ID: MTK4-001</span>
+          <span id="qModalMetaBadge" class="px-2.5 py-1 rounded-xl bg-amber-400 text-slate-950 text-[11px] sm:text-xs font-bold">Kelas 4 • Matematika</span>
         </div>
-
-        <div class="p-4 sm:p-6 xl:p-7 space-y-3 xl:space-y-4">
-          <div class="flex items-center justify-between text-xs xl:text-sm text-slate-500">
-            <span id="qModalMateri" class="font-semibold text-indigo-600">Materi: Bilangan</span>
-            <span id="qModalTingkat" class="px-2.5 py-1 rounded bg-slate-100 font-bold text-slate-700">Tingkat: Mudah</span>
-          </div>
-
-          <div class="p-4 xl:p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
-            <p id="qModalQuestionText" class="text-lg sm:text-xl xl:text-3xl font-bold text-slate-900 leading-relaxed">
-              Pertanyaan akan tampil di sini...
-            </p>
-          </div>
+        <div class="flex items-center gap-2">
+          <span id="qModalTimerBadge" class="px-2.5 py-1 rounded-xl bg-slate-900/40 text-amber-200 font-mono text-xs sm:text-sm font-bold">⏱️ 00:00</span>
         </div>
       </div>
 
-      <!-- BAGIAN BAWAH MODAL: SEMUA TOMBOL JAWABAN & LANJUTKAN (MUDAH DIJANGKAU SISWA KELAS 1 SD) -->
-      <div class="p-4 sm:p-6 xl:p-7 pt-2 bg-slate-50/70 border-t border-slate-200/80 space-y-4">
-        <div class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-400 text-center">
-          👇 Sentuh Salah Satu Jawaban di Bawah Ini 👇
+      <!-- INFO SISWA GILIRAN & HASIL LEMPARAN DADU -->
+      <div class="px-4 sm:px-6 pt-3.5 pb-2 bg-sky-50/70 border-b border-sky-100 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span id="qModalPlayerAvatar" class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-base shadow-sm">🦁</span>
+          <div>
+            <div id="qModalPlayerBadge" class="text-xs sm:text-sm xl:text-base font-extrabold text-slate-900">Giliran: Siswa 1</div>
+            <div id="qModalMateri" class="text-[11px] sm:text-xs font-semibold text-indigo-600">Materi: Bilangan • Mudah</div>
+          </div>
+        </div>
+        <div class="px-3 py-1.5 rounded-2xl bg-amber-100 border border-amber-300 text-amber-950 font-display font-bold text-xs sm:text-sm xl:text-base flex items-center gap-1.5">
+          <span>🎲 Dadu:</span>
+          <span id="qModalDiceValue" class="text-base sm:text-lg xl:text-xl text-indigo-700">6</span>
+          <span>Langkah</span>
+        </div>
+      </div>
+
+      <!-- ISI PERTANYAAN & 4 TOMBOL PILIHAN JAWABAN -->
+      <div class="p-4 sm:p-6 space-y-4">
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 border-2 border-slate-200/80">
+          <p id="qModalQuestionText" class="text-base sm:text-xl xl:text-2xl font-bold text-slate-900 leading-relaxed">
+            Pertanyaan akan tampil di sini...
+          </p>
         </div>
 
-        <!-- 4 Pilihan Jawaban Besar di Bawah -->
-        <div id="qModalOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 xl:gap-4"></div>
+        <!-- 4 Pilihan Jawaban Jelas & Mudah Ditekan -->
+        <div id="qModalOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5"></div>
 
-        <!-- Box Feedback & Tombol Lanjutkan di Paling Bawah -->
-        <div id="qModalFeedbackBox" class="hidden p-4 xl:p-5 rounded-2xl border-2 space-y-3 animate-pop">
-          <div class="flex items-center gap-2.5">
-            <span id="qFeedbackIcon" class="text-2xl xl:text-3xl">✅</span>
-            <h4 id="qFeedbackTitle" class="font-display font-bold text-lg xl:text-2xl">JAWABAN BENAR!</h4>
+        <!-- Box Hasil BENAR / SALAH & Pembahasan -->
+        <div id="qModalFeedbackBox" class="hidden p-3.5 sm:p-4 rounded-2xl border-2 space-y-2.5 animate-pop">
+          <div class="flex items-center gap-2">
+            <span id="qFeedbackIcon" class="text-2xl">✅</span>
+            <h4 id="qFeedbackTitle" class="font-display font-bold text-base sm:text-xl">JAWABAN BENAR!</h4>
           </div>
-          <p id="qFeedbackCorrectAnswer" class="text-sm xl:text-base font-bold"></p>
-          <p id="qFeedbackExplanation" class="text-sm xl:text-base text-slate-700 bg-white/80 p-3 rounded-xl border border-slate-200/60"></p>
+          <p id="qFeedbackCorrectAnswer" class="text-xs sm:text-sm xl:text-base font-bold"></p>
+          <p id="qFeedbackExplanation" class="text-xs sm:text-sm xl:text-base text-slate-700 bg-white/90 p-2.5 sm:p-3 rounded-xl border border-slate-200/70"></p>
           <div class="pt-1">
-            <button id="qContinueBtn" onclick="finalizeQuizTurn()" class="ifp-touch-target w-full py-4 xl:py-5 px-7 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-base xl:text-xl shadow-lg transition transform active:scale-95 cursor-pointer">
-              Lanjutkan Langkah Bidak ➡️
+            <button id="qContinueBtn" onclick="finalizeQuizTurn()" class="ifp-touch-target w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-sm sm:text-lg shadow-lg transition transform active:scale-95 cursor-pointer">
+              Lanjutkan Permainan ➡️
             </button>
           </div>
         </div>
@@ -455,22 +437,6 @@
         Seluruh soal unik dalam antrean sesi ini telah digunakan. Sistem mencegah pengulangan soal yang sama.
       </p>
       <div id="sysDialogActions" class="flex flex-col sm:flex-row gap-3 pt-2 justify-center"></div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       MODAL 2: NOTIFIKASI BANK SOAL HABIS / PEMENANG / DIALOG
-  ========================================================== -->
-  <div id="systemDialogModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100 text-center space-y-4 animate-pop">
-      <div id="sysDialogIcon" class="w-16 h-16 mx-auto rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-4xl">
-        ⚠️
-      </div>
-      <h3 id="sysDialogTitle" class="font-display font-bold text-2xl text-slate-900">BANK SOAL HABIS</h3>
-      <p id="sysDialogMessage" class="text-sm text-slate-600 leading-relaxed">
-        Seluruh soal unik dalam antrean sesi ini telah digunakan. Sistem mencegah pengulangan soal yang sama.
-      </p>
-      <div id="sysDialogActions" class="flex flex-col sm:flex-row gap-2.5 pt-2 justify-center"></div>
     </div>
   </div>
 
@@ -646,6 +612,7 @@
       }
       return {
         dice: () => { playTone(320, 'triangle', 0.08, 0); playTone(440, 'triangle', 0.08, 0.09); playTone(560, 'triangle', 0.12, 0.18); },
+        step: () => { playTone(520, 'sine', 0.07, 0); },
         correct: () => { playTone(523.25, 'sine', 0.14, 0); playTone(659.25, 'sine', 0.14, 0.12); playTone(783.99, 'sine', 0.25, 0.24); },
         wrong: () => { playTone(240, 'sawtooth', 0.18, 0); playTone(185, 'sawtooth', 0.28, 0.16); },
         ladder: () => { [400, 500, 600, 750, 900].forEach((f, i) => playTone(f, 'sine', 0.1, i * 0.07)); },
@@ -1231,10 +1198,10 @@
     };
 
     const PLAYER_THEMES = [
-      { avatar: '🦁', colorName: 'Merah Singa', bg: 'bg-rose-600', ring: 'ring-rose-200', text: 'text-rose-700', light: 'bg-rose-50' },
-      { avatar: '🐼', colorName: 'Biru Panda', bg: 'bg-sky-600', ring: 'ring-sky-200', text: 'text-sky-700', light: 'bg-sky-50' },
-      { avatar: '🦊', colorName: 'Oranye Rubah', bg: 'bg-amber-500', ring: 'ring-amber-200', text: 'text-amber-700', light: 'bg-amber-50' },
-      { avatar: '🐸', colorName: 'Hijau Katak', bg: 'bg-emerald-600', ring: 'ring-emerald-200', text: 'text-emerald-700', light: 'bg-emerald-50' }
+      { avatar: '🦁', colorName: 'Merah', bg: 'bg-rose-600', border: 'border-rose-500', ring: 'ring-rose-200', text: 'text-rose-700', light: 'bg-rose-50' },
+      { avatar: '🐼', colorName: 'Biru', bg: 'bg-sky-600', border: 'border-sky-500', ring: 'ring-sky-200', text: 'text-sky-700', light: 'bg-sky-50' },
+      { avatar: '🐸', colorName: 'Hijau', bg: 'bg-emerald-600', border: 'border-emerald-500', ring: 'ring-emerald-200', text: 'text-emerald-700', light: 'bg-emerald-50' },
+      { avatar: '🦊', colorName: 'Kuning', bg: 'bg-amber-500', border: 'border-amber-500', ring: 'ring-amber-200', text: 'text-amber-700', light: 'bg-amber-50' }
     ];
 
     let gameState = {
@@ -1244,7 +1211,9 @@
       pendingDiceRoll: 0,
       activeQuestion: null,
       lastAnswerCorrect: false,
-      isAnimating: false
+      isAnimating: false,
+      quizTimerInterval: null,
+      quizElapsedSeconds: 0
     };
 
     // Hitung koordinat persentase (0..100) pusat kotak nomor 1..100 pada papan zig-zag
@@ -1337,7 +1306,7 @@
     }
 
     // Render bidak pemain di atas papan
-    function renderPawns() {
+    function renderPawns(activeSteppingIdx = -1) {
       const layer = document.getElementById('pawnsLayer');
       layer.innerHTML = '';
 
@@ -1351,14 +1320,28 @@
       gameState.players.forEach((p, idx) => {
         const center = getCellCenterPercent(p.position);
         const off = offsets[idx % offsets.length];
+        const isStepping = idx === activeSteppingIdx;
         const pawn = document.createElement('div');
-        pawn.className = `pawn absolute w-7 h-7 sm:w-9 sm:h-9 xl:w-11 xl:h-11 -ml-3.5 -mt-3.5 sm:-ml-4.5 sm:-mt-4.5 xl:-ml-5.5 xl:-mt-5.5 rounded-full ${p.theme.bg} text-white border-2 xl:border-[3px] border-white flex items-center justify-center text-sm sm:text-base xl:text-xl font-bold`;
+        pawn.className = `pawn ${isStepping ? 'pawn-stepping ring-4 ring-amber-300' : ''} absolute w-7 h-7 sm:w-9 sm:h-9 xl:w-11 xl:h-11 -ml-3.5 -mt-3.5 sm:-ml-4.5 sm:-mt-4.5 xl:-ml-5.5 xl:-mt-5.5 rounded-full ${p.theme.bg} text-white border-2 xl:border-[3px] border-white flex items-center justify-center text-sm sm:text-base xl:text-xl font-bold`;
         pawn.style.left = `${center.x + off.dx}%`;
         pawn.style.top = `${center.y + off.dy}%`;
         pawn.title = `${p.name} (Kotak ${p.position})`;
         pawn.textContent = p.theme.avatar;
         layer.appendChild(pawn);
       });
+    }
+
+    function showBoardMoveBanner(text, colorClass = 'from-indigo-600 to-sky-600') {
+      const banner = document.getElementById('boardMoveBanner');
+      if (!banner) return;
+      banner.className = `mb-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r ${colorClass} text-white font-display font-bold text-xs sm:text-base xl:text-lg text-center shadow-md animate-pop`;
+      banner.textContent = text;
+      banner.classList.remove('hidden');
+    }
+
+    function hideBoardMoveBanner() {
+      const banner = document.getElementById('boardMoveBanner');
+      if (banner) banner.classList.add('hidden');
     }
 
     /*************************************************************************
@@ -1455,6 +1438,9 @@
       document.getElementById('setupPanel').classList.add('hidden');
       document.getElementById('arenaPanel').classList.remove('hidden');
 
+      hideBoardMoveBanner();
+      const bigDiceOverlay = document.getElementById('boardBigDiceOverlay');
+      if (bigDiceOverlay) bigDiceOverlay.classList.add('hidden');
       renderBoard();
       renderPawns();
       updateArenaUI();
@@ -1463,19 +1449,19 @@
     function confirmRestartSession() {
       showSystemDialog(
         '🔄',
-        'Mulai Ulang Permainan?',
-        'Memulai ulang akan mereset posisi papan, skor pemain, dan membuat antrean soal acak yang baru.',
+        'Mulai Ulang / Ganti Pengaturan?',
+        'Sesi permainan saat ini akan dihentikan dan antrean soal anti-pengulangan akan diatur ulang.',
         [
           { label: 'Batal', primary: false, action: () => closeModal('systemDialogModal') },
           {
-            label: 'Ya, Reset & Atur Ulang',
+            label: 'Ya, Kembali ke Pengaturan',
             primary: true,
             action: () => {
               closeModal('systemDialogModal');
               gameState.active = false;
+              gameState.isAnimating = false;
               document.getElementById('arenaPanel').classList.add('hidden');
               document.getElementById('setupPanel').classList.remove('hidden');
-              updateFilteredCountPreview();
             }
           }
         ]
@@ -1483,65 +1469,69 @@
     }
 
     function updateArenaUI() {
+      if (!gameState.players || gameState.players.length === 0) return;
       const current = gameState.players[gameState.currentPlayerIndex];
-      const remaining = SessionQuizEngine.getRemainingCount();
+      const usedCount = SessionQuizEngine.usedQuestionIds.size;
+      const usedBadge = document.getElementById('usedCountBadge');
+      if (usedBadge) usedBadge.textContent = `🛡️ ${usedCount} Terpakai`;
 
-      document.getElementById('badgeRemainingPool').textContent = `Sisa Antrean: ${remaining} Soal`;
-      document.getElementById('activePlayerAvatar').textContent = current.theme.avatar;
-      document.getElementById('activePlayerName').textContent = `Pemain ${current.turnNumber}: ${current.name}`;
-      document.getElementById('activePlayerPosText').textContent = `Pion ${current.theme.colorName} • Petak ${current.position} • Skor: ${current.score}`;
-      document.getElementById('activeTurnBadge').textContent = `Giliran ${current.turnNumber}/4 🎯`;
-
+      // Perbarui bar dadu kecil tepat di atas 4 kartu siswa
+      const miniAvatar = document.getElementById('miniDiceTurnAvatar');
+      if (miniAvatar) {
+        miniAvatar.className = `w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${current.theme.bg} text-white flex items-center justify-center text-sm sm:text-base shadow-sm shrink-0`;
+        miniAvatar.textContent = current.theme.avatar;
+      }
+      const miniText = document.getElementById('miniDiceTurnText');
+      if (miniText) {
+        miniText.textContent = `Giliran Siswa ${current.turnNumber}: ${current.name} (${current.theme.colorName})`;
+      }
       const rollBtn = document.getElementById('rollDiceBtn');
-      rollBtn.disabled = gameState.isAnimating;
-      document.getElementById('turnInstructionText').textContent =
-        `Giliran Pemain ${current.turnNumber} (${current.name}): Lempar dadu dan jawab 1 soal unik untuk melangkah!`;
+      if (rollBtn && !gameState.isAnimating) {
+        rollBtn.disabled = false;
+      }
 
-      // Render klasemen 4 siswa
+      // Render 4 kartu siswa dalam SATU BARIS HORIZONTAL SEJAJAR (Siswa 1 Merah | Siswa 2 Biru | Siswa 3 Hijau | Siswa 4 Kuning)
       const sb = document.getElementById('scoreboardList');
       sb.innerHTML = gameState.players.map((p, idx) => {
         const isCurrent = idx === gameState.currentPlayerIndex;
         return `
-          <div class="p-3 xl:p-3.5 rounded-2xl border ${isCurrent ? 'border-sky-500 bg-sky-50/70 shadow-sm' : 'border-slate-200 bg-slate-50/50'} flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <span class="w-9 h-9 xl:w-11 xl:h-11 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-base xl:text-xl shadow-sm">${p.theme.avatar}</span>
-              <div>
-                <div class="font-bold text-sm xl:text-base text-slate-900 flex items-center gap-1.5">
-                  <span class="text-xs xl:text-sm font-extrabold ${p.theme.text}">P${p.turnNumber}</span>
-                  <span>${p.name}</span>
-                  ${isCurrent ? '<span class="text-[10px] xl:text-xs px-2 py-0.5 rounded bg-sky-600 text-white">GILIRAN</span>' : ''}
+          <div
+            ${isCurrent ? 'onclick="handleRollDice()"' : ''}
+            class="ifp-touch-target p-2 sm:p-2.5 xl:p-3 rounded-2xl border-2 transition-all flex flex-col justify-between min-w-0 ${isCurrent ? `${p.theme.border} ${p.theme.light} shadow-md ring-2 ${p.theme.ring} cursor-pointer` : 'border-slate-200 bg-white opacity-90'}"
+          >
+            <div>
+              <!-- Baris Atas Kartu: Pion, Warna & Indikator Giliran -->
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                  <span class="w-6 h-6 sm:w-7 sm:h-7 xl:w-9 xl:h-9 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-xs sm:text-sm xl:text-base shadow-sm shrink-0">${p.theme.avatar}</span>
+                  <span class="text-[10px] sm:text-xs xl:text-sm font-extrabold ${p.theme.text} truncate">${p.theme.colorName}</span>
                 </div>
-                <div class="text-[11px] xl:text-xs text-slate-500">Benar: ${p.correctCount} • Salah: ${p.wrongCount}</div>
+                ${isCurrent
+                  ? `<span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${p.theme.bg} text-white shrink-0 animate-pulse">GILIRAN</span>`
+                  : `<span class="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">#${p.turnNumber}</span>`
+                }
+              </div>
+
+              <!-- Nama Siswa -->
+              <div class="font-display font-bold text-xs sm:text-sm xl:text-base text-slate-900 truncate" title="${p.name}">
+                ${p.name}
               </div>
             </div>
-            <div class="text-right">
-              <div class="font-display font-bold text-base xl:text-lg text-indigo-700">Petak ${p.position}</div>
-              <div class="text-[11px] xl:text-xs font-bold text-slate-500">${p.score} pts</div>
+
+            <!-- Posisi Petak & Statistik Benar/Salah -->
+            <div class="mt-1 pt-1 border-t border-slate-200/70 flex items-center justify-between gap-1">
+              <span class="font-display font-bold text-xs sm:text-sm xl:text-base text-indigo-700">Petak ${p.position}</span>
+              <div class="flex items-center gap-1 text-[9px] sm:text-[11px] font-bold">
+                <span class="text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded">✓${p.correctCount}</span>
+                <span class="text-rose-700 bg-rose-100/80 px-1.5 py-0.5 rounded">✕${p.wrongCount}</span>
+              </div>
             </div>
           </div>
         `;
       }).join('');
-
-      // Render riwayat ID soal yang sudah terpakai
-      const usedCount = SessionQuizEngine.usedQuestionIds.size;
-      document.getElementById('usedCountBadge').textContent = `${usedCount} Terpakai`;
-      const logBox = document.getElementById('usedQuestionsLog');
-      if (SessionQuizEngine.historyLog.length === 0) {
-        logBox.innerHTML = '<div class="text-slate-400 italic py-2 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>';
-      } else {
-        logBox.innerHTML = SessionQuizEngine.historyLog.map(item => `
-          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/70">
-            <div>
-              <span class="font-mono font-bold text-indigo-700">${item.id}</span>
-              <span class="text-slate-500">• ${item.player}</span>
-            </div>
-            <span class="font-semibold text-[11px]">${item.status}</span>
-          </div>
-        `).join('');
-      }
     }
 
-    // Lempar Dadu & Ambil 1 Soal dari Antrean Sesi Tunggal
+    // Lempar Dadu Kecil di Bawah -> Munculkan Dadu Besar di Tengah Papan -> Buka Soal
     function handleRollDice() {
       if (!gameState.active || gameState.isAnimating) return;
 
@@ -1554,45 +1544,90 @@
       }
 
       gameState.isAnimating = true;
-      updateArenaUI();
+      const rollBtn = document.getElementById('rollDiceBtn');
+      if (rollBtn) rollBtn.disabled = true;
       AudioEngine.dice();
 
+      // Tampilkan Dadu Besar tepat di tengah papan ular tangga
+      const bigOverlay = document.getElementById('boardBigDiceOverlay');
+      const bigPlayerLabel = document.getElementById('bigDicePlayerLabel');
+      const bigStatusText = document.getElementById('bigDiceStatusText');
       const diceBox = document.getElementById('diceBox');
+      const miniDiceIcon = document.getElementById('miniDiceIcon');
+
+      bigPlayerLabel.textContent = `${current.theme.avatar} Giliran Siswa ${current.turnNumber}: ${current.name}`;
+      bigStatusText.textContent = 'Mengocok dadu...';
+      bigOverlay.classList.remove('hidden');
       diceBox.classList.add('rolling');
 
       let ticks = 0;
-      const interval = setInterval(() => {
-        diceBox.textContent = Math.floor(Math.random() * 6) + 1;
+      const rollInterval = setInterval(() => {
+        const tempVal = Math.floor(Math.random() * 6) + 1;
+        diceBox.textContent = tempVal;
+        if (miniDiceIcon) miniDiceIcon.textContent = tempVal;
         ticks++;
-        if (ticks >= 8) {
-          clearInterval(interval);
+        if (ticks >= 10) {
+          clearInterval(rollInterval);
           diceBox.classList.remove('rolling');
+
           const finalDice = Math.floor(Math.random() * 6) + 1;
           diceBox.textContent = finalDice;
+          if (miniDiceIcon) miniDiceIcon.textContent = finalDice;
           gameState.pendingDiceRoll = finalDice;
+          bigStatusText.textContent = `Angka dadu keluar: ${finalDice} langkah!`;
 
-          // Ambil 1 soal unik dari antrean sesi
-          const question = SessionQuizEngine.drawNextQuestion(current.name);
-          updateArenaUI();
-
-          if (!question) {
-            gameState.isAnimating = false;
+          // Ambil 1 soal unik dari antrean sesi bersama (otomatis dikunci di usedQuestionIds)
+          const nextQuestion = SessionQuizEngine.drawNextQuestion(current.name);
+          if (!nextQuestion) {
+            bigOverlay.classList.add('hidden');
             handleBankSoalHabis();
             return;
           }
 
-          gameState.activeQuestion = question;
-          openQuizModal(question, current);
+          gameState.activeQuestion = nextQuestion;
+          updateArenaUI();
+
+          setTimeout(() => {
+            bigOverlay.classList.add('hidden');
+            openQuizModal(nextQuestion, current);
+          }, 700);
         }
       }, 65);
     }
 
+    function startQuizTimer() {
+      stopQuizTimer();
+      gameState.quizElapsedSeconds = 0;
+      const badge = document.getElementById('qModalTimerBadge');
+      if (badge) badge.textContent = '⏱️ 00:00';
+      gameState.quizTimerInterval = setInterval(() => {
+        gameState.quizElapsedSeconds++;
+        const mins = String(Math.floor(gameState.quizElapsedSeconds / 60)).padStart(2, '0');
+        const secs = String(gameState.quizElapsedSeconds % 60).padStart(2, '0');
+        if (badge) badge.textContent = `⏱️ ${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopQuizTimer() {
+      if (gameState.quizTimerInterval) {
+        clearInterval(gameState.quizTimerInterval);
+        gameState.quizTimerInterval = null;
+      }
+    }
+
     function openQuizModal(question, player) {
+      const questionNumber = SessionQuizEngine.usedQuestionIds.size;
+      document.getElementById('qModalNumberBadge').textContent = `Soal #${questionNumber}`;
       document.getElementById('qModalIdBadge').textContent = `ID: ${question.id}`;
       document.getElementById('qModalMetaBadge').textContent = `Kelas ${question.kelas} • ${question.mapel}`;
-      document.getElementById('qModalPlayerBadge').textContent = `Pemain ${player.turnNumber}: ${player.name} (Dadu: ${gameState.pendingDiceRoll})`;
-      document.getElementById('qModalMateri').textContent = `Materi: ${question.materi || 'Umum'}`;
-      document.getElementById('qModalTingkat').textContent = `Tingkat: ${question.tingkat}`;
+
+      const avatarEl = document.getElementById('qModalPlayerAvatar');
+      avatarEl.className = `w-9 h-9 rounded-xl ${player.theme.bg} text-white flex items-center justify-center text-lg shadow-sm shrink-0`;
+      avatarEl.textContent = player.theme.avatar;
+
+      document.getElementById('qModalPlayerBadge').textContent = `Giliran Siswa ${player.turnNumber}: ${player.name} (${player.theme.colorName})`;
+      document.getElementById('qModalMateri').textContent = `Materi: ${question.materi || 'Umum'} • Tingkat: ${question.tingkat}`;
+      document.getElementById('qModalDiceValue').textContent = gameState.pendingDiceRoll;
       document.getElementById('qModalQuestionText').textContent = question.pertanyaan;
 
       const feedbackBox = document.getElementById('qModalFeedbackBox');
@@ -1604,19 +1639,22 @@
         <button
           id="optBtn-${idx}"
           onclick="submitQuizAnswer(${idx})"
-          class="quiz-opt-btn ifp-touch-target text-left p-4 xl:p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition flex items-start gap-3.5 cursor-pointer disabled:cursor-default"
+          class="quiz-opt-btn ifp-touch-target text-left p-3.5 sm:p-4 xl:p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition flex items-start gap-3 cursor-pointer disabled:cursor-default bg-white shadow-sm"
         >
-          <span class="w-8 h-8 xl:w-10 xl:h-10 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm xl:text-lg flex items-center justify-center shrink-0">${labels[idx]}</span>
-          <span class="text-sm xl:text-lg font-semibold text-slate-800 pt-1">${optText}</span>
+          <span class="w-8 h-8 xl:w-10 xl:h-10 rounded-xl bg-indigo-100 text-indigo-800 font-bold text-sm xl:text-lg flex items-center justify-center shrink-0">${labels[idx]}</span>
+          <span class="text-sm sm:text-base xl:text-lg font-semibold text-slate-800 pt-1">${optText}</span>
         </button>
       `).join('');
 
+      startQuizTimer();
       document.getElementById('quizModal').classList.remove('hidden');
     }
 
     function submitQuizAnswer(selectedIdx) {
       const q = gameState.activeQuestion;
       if (!q) return;
+
+      stopQuizTimer();
 
       // Kunci semua tombol pilihan agar jawaban tidak bisa diubah
       const allBtns = document.querySelectorAll('.quiz-opt-btn');
@@ -1665,7 +1703,7 @@
       document.getElementById('qFeedbackExplanation').textContent = `Pembahasan: ${q.pembahasan}`;
 
       document.getElementById('qContinueBtn').textContent = isCorrect
-        ? `Majukan Bidak +${gameState.pendingDiceRoll} Petak ➡️`
+        ? `Lihat Pion Melangkah +${gameState.pendingDiceRoll} Petak ➡️`
         : 'Tutup & Lanjut Giliran Berikutnya ➡️';
     }
 
@@ -1703,76 +1741,130 @@
     }
 
     function finalizeQuizTurn() {
+      stopQuizTimer();
       closeModal('quizModal');
-      const current = gameState.players[gameState.currentPlayerIndex];
+      const playerIdx = gameState.currentPlayerIndex;
+      const current = gameState.players[playerIdx];
 
       if (gameState.lastAnswerCorrect) {
         current.correctCount += 1;
         current.score += 10;
-        let targetPos = current.position + gameState.pendingDiceRoll;
-        if (targetPos > 100) {
-          // Pantulan jika melebihi 100
-          targetPos = 100 - (targetPos - 100);
-        }
-        current.position = targetPos;
-        renderPawns();
-        updateArenaUI();
 
-        // Cek Tangga atau Ular setelah 450ms
-        setTimeout(() => {
-          if (LADDERS[current.position]) {
-            AudioEngine.ladder();
-            current.position = LADDERS[current.position];
-            current.score += 5;
-            renderPawns();
-            updateArenaUI();
-          } else if (SNAKES[current.position]) {
-            AudioEngine.snake();
-            current.position = SNAKES[current.position];
-            renderPawns();
-            updateArenaUI();
-          }
+        // Jalankan animasi langkah pion satu per satu di papan sehingga siswa melihat jelas pergerakan pionnya
+        let stepsLeft = gameState.pendingDiceRoll;
+        let direction = 1; // +1 maju, -1 pantul balik jika melebihi 100
+        let stepCount = 0;
 
-          // Cek Kemenangan (Siswa pertama yang mencapai petak 100)
-          if (current.position === 100) {
-            AudioEngine.win();
-            gameState.active = false;
-            gameState.isAnimating = false;
-            const rankingHtml = buildFourPlayersRankingHtml(current.id);
-            showSystemDialog(
-              '🏆',
-              `PEMENANG: ${current.name.toUpperCase()}!`,
-              `Pemain ${current.turnNumber} (${current.name}) menjadi siswa pertama yang mencapai Petak 100!${rankingHtml}`,
-              [
-                {
-                  label: 'Main Lagi (Sesi Soal Baru)',
-                  primary: true,
-                  action: () => {
-                    closeModal('systemDialogModal');
-                    startNewGameSession();
-                  }
-                },
-                {
-                  label: 'Kembali ke Pengaturan',
-                  primary: false,
-                  action: () => {
-                    closeModal('systemDialogModal');
-                    document.getElementById('arenaPanel').classList.add('hidden');
-                    document.getElementById('setupPanel').classList.remove('hidden');
-                  }
-                }
-              ],
-              true
+        showBoardMoveBanner(
+          `${current.theme.avatar} ${current.name} melangkah +${stepsLeft} petak (Dadu: ${stepsLeft})...`,
+          'from-indigo-600 to-sky-600'
+        );
+
+        const stepInterval = setInterval(() => {
+          if (stepsLeft > 0) {
+            if (current.position === 100) {
+              direction = -1;
+            }
+            current.position += direction;
+            stepsLeft--;
+            stepCount++;
+
+            AudioEngine.step();
+            renderPawns(playerIdx);
+            updateArenaUI();
+            showBoardMoveBanner(
+              `${current.theme.avatar} ${current.name} melangkah (${stepCount}/${gameState.pendingDiceRoll}) → Petak ${current.position}`,
+              'from-indigo-600 to-sky-600'
             );
-            return;
-          }
+          } else {
+            clearInterval(stepInterval);
 
-          advanceToNextPlayer();
-        }, 500);
+            // Setelah langkah selesai, beri jeda sejenak agar siswa melihat posisi pendaratan, lalu cek Tangga / Ular
+            setTimeout(() => {
+              if (LADDERS[current.position]) {
+                const dest = LADDERS[current.position];
+                AudioEngine.ladder();
+                showBoardMoveBanner(
+                  `🪜 HEBAT! ${current.name} naik tangga dari Petak ${current.position} ke Petak ${dest}!`,
+                  'from-emerald-600 to-teal-500'
+                );
+                current.position = dest;
+                current.score += 5;
+                renderPawns(playerIdx);
+                updateArenaUI();
+
+                setTimeout(() => checkWinAndAdvance(current), 1100);
+              } else if (SNAKES[current.position]) {
+                const dest = SNAKES[current.position];
+                AudioEngine.snake();
+                showBoardMoveBanner(
+                  `🐍 UPS! ${current.name} terkena ular, turun dari Petak ${current.position} ke Petak ${dest}!`,
+                  'from-rose-600 to-orange-500'
+                );
+                current.position = dest;
+                renderPawns(playerIdx);
+                updateArenaUI();
+
+                setTimeout(() => checkWinAndAdvance(current), 1100);
+              } else {
+                setTimeout(() => checkWinAndAdvance(current), 650);
+              }
+            }, 350);
+          }
+        }, 380);
       } else {
         current.wrongCount += 1;
-        advanceToNextPlayer();
+        showBoardMoveBanner(
+          `💡 Jawaban ${current.name} kurang tepat, pion tetap di Petak ${current.position}.`,
+          'from-slate-700 to-slate-600'
+        );
+        updateArenaUI();
+        setTimeout(() => {
+          hideBoardMoveBanner();
+          advanceToNextPlayer();
+        }, 900);
       }
+    }
+
+    function checkWinAndAdvance(current) {
+      hideBoardMoveBanner();
+      renderPawns();
+
+      // Cek Kemenangan (Siswa pertama yang mencapai petak 100)
+      if (current.position === 100) {
+        AudioEngine.win();
+        gameState.active = false;
+        gameState.isAnimating = false;
+        const rankingHtml = buildFourPlayersRankingHtml(current.id);
+        showSystemDialog(
+          '🏆',
+          `PEMENANG: ${current.name.toUpperCase()}!`,
+          `Pemain ${current.turnNumber} (${current.name}) menjadi siswa pertama yang mencapai Petak 100!${rankingHtml}`,
+          [
+            {
+              label: 'Main Lagi (Sesi Soal Baru)',
+              primary: true,
+              action: () => {
+                closeModal('systemDialogModal');
+                startNewGameSession();
+              }
+            },
+            {
+              label: 'Kembali ke Pengaturan',
+              primary: false,
+              action: () => {
+                closeModal('systemDialogModal');
+                document.getElementById('arenaPanel').classList.add('hidden');
+                document.getElementById('setupPanel').classList.remove('hidden');
+              }
+            }
+          ],
+          true
+        );
+        return;
+      }
+
+      advanceToNextPlayer();
     }
 
     function advanceToNextPlayer() {
@@ -1788,6 +1880,8 @@
 
       // Rotasi giliran berurutan: Pemain 1 (0) -> Pemain 2 (1) -> Pemain 3 (2) -> Pemain 4 (3) -> kembali ke Pemain 1 (0)
       gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % 4;
+      const miniDiceIcon = document.getElementById('miniDiceIcon');
+      if (miniDiceIcon) miniDiceIcon.textContent = '🎲';
       updateArenaUI();
     }
 
