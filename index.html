@@ -39,6 +39,16 @@
         font-size: 0.85rem;
       }
     }
+    @media (min-width: 1280px) {
+      .board-cell {
+        padding: 6px;
+        font-size: 1.05rem;
+      }
+    }
+    /* Optimasi Layar Besar IFP (Interactive Flat Panel) */
+    .ifp-touch-target {
+      touch-action: manipulation;
+    }
     .pawn {
       transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 3px 6px rgba(0,0,0,0.3);
@@ -71,58 +81,59 @@
 
   <!-- HEADER UTAMA -->
   <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-display font-bold text-xl shadow-md">
+    <div class="max-w-[1680px] mx-auto px-4 sm:px-6 xl:px-8 py-3 xl:py-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3 xl:gap-4">
+        <div class="w-11 h-11 xl:w-14 xl:h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-display font-bold text-xl xl:text-3xl shadow-md">
           🎲
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Ular Tangga Pintar</h1>
-            <span class="px-2 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">SDN KESILIR 02</span>
+          <div class="flex items-center gap-2 xl:gap-3">
+            <h1 class="text-lg sm:text-xl xl:text-2xl font-bold text-slate-900 leading-tight">Ular Tangga Pintar</h1>
+            <span class="px-2.5 py-0.5 text-[11px] xl:text-xs font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">SDN KESILIR 02</span>
+            <span class="hidden lg:inline-block px-2.5 py-0.5 text-xs font-bold bg-sky-100 text-sky-800 rounded-full border border-sky-200">🖥️ Mode Layar IFP</span>
           </div>
-          <p class="text-xs text-slate-500">Petualangan Kuis Interaktif • Sistem Anti-Pengulangan Soal</p>
+          <p class="text-xs xl:text-sm text-slate-500">Petualangan Kuis Interaktif 4 Siswa • Sistem Anti-Pengulangan Soal</p>
         </div>
       </div>
 
-      <nav class="flex items-center gap-2">
-        <button id="navGameBtn" onclick="switchView('game')" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
+      <nav class="flex items-center gap-2.5 xl:gap-3">
+        <button id="navGameBtn" onclick="switchView('game')" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl text-sm xl:text-base font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
           🎮 Arena Permainan
         </button>
-        <button id="navTeacherBtn" onclick="switchView('teacher')" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5">
+        <button id="navTeacherBtn" onclick="switchView('teacher')" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl text-sm xl:text-base font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-2">
           <span>📚 Halaman Guru</span>
-          <span id="totalBankBadge" class="px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-md font-bold">300</span>
+          <span id="totalBankBadge" class="px-2 py-0.5 text-xs xl:text-sm bg-indigo-100 text-indigo-700 rounded-md font-bold">300</span>
         </button>
       </nav>
     </div>
   </header>
 
   <!-- KONTEN UTAMA -->
-  <main class="max-w-7xl mx-auto px-4 py-5">
+  <main class="max-w-[1680px] mx-auto px-4 sm:px-6 xl:px-8 py-5 xl:py-6">
 
     <!-- =========================================================
          VIEW 1: SETUP & ARENA PERMAINAN
     ========================================================== -->
-    <section id="viewGame" class="space-y-5">
+    <section id="viewGame" class="space-y-5 xl:space-y-6">
 
       <!-- PANEL PENGATURAN SESI BARU -->
-      <div id="setupPanel" class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border border-sky-100 animate-pop">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-5">
+      <div id="setupPanel" class="bg-white rounded-3xl p-5 sm:p-7 xl:p-9 shadow-lg border border-sky-100 animate-pop">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 xl:pb-5 border-b border-slate-100 mb-5 xl:mb-6">
           <div>
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Pengaturan Petualangan Kuis</h2>
-            <p class="text-sm text-slate-500">Pilih jenjang kelas, mata pelajaran, dan mode pemain. Sistem menjamin 0% soal berulang dalam 1 sesi!</p>
+            <h2 class="text-xl sm:text-2xl xl:text-3xl font-bold text-slate-900">Pengaturan Petualangan Kuis (Layar IFP)</h2>
+            <p class="text-sm xl:text-base text-slate-500">Pilih jenjang kelas, mata pelajaran, dan isi nama 4 siswa. Sistem menjamin 0% soal berulang dalam 1 sesi!</p>
           </div>
-          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-xs font-semibold">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-xs xl:text-sm font-semibold">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Anti-Duplikasi Aktif
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5 mb-6 xl:mb-7">
           <!-- Filter Kelas -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">1. Jenjang Kelas</label>
-            <select id="cfgKelas" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">1. Jenjang Kelas</label>
+            <select id="cfgKelas" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Kelas (1 - 6 SD)</option>
               <option value="1">Kelas 1 SD</option>
               <option value="2">Kelas 2 SD</option>
@@ -134,9 +145,9 @@
           </div>
 
           <!-- Filter Mata Pelajaran -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">2. Mata Pelajaran</label>
-            <select id="cfgMapel" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">2. Mata Pelajaran</label>
+            <select id="cfgMapel" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Mata Pelajaran (8 Mapel)</option>
               <option value="Matematika">Matematika</option>
               <option value="Bahasa Indonesia">Bahasa Indonesia</option>
@@ -150,9 +161,9 @@
           </div>
 
           <!-- Filter Tingkat Kesulitan -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">3. Tingkat Kesulitan</label>
-            <select id="cfgTingkat" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">3. Tingkat Kesulitan</label>
+            <select id="cfgTingkat" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Tingkat (Mudah - Sulit)</option>
               <option value="Mudah">Mudah</option>
               <option value="Sedang">Sedang</option>
@@ -161,52 +172,52 @@
           </div>
 
           <!-- Mode Permainan Khusus 4 Siswa -->
-          <div class="bg-sky-50 p-4 rounded-2xl border border-sky-200/80 flex flex-col justify-center">
-            <label class="block text-xs font-bold uppercase tracking-wider text-sky-700 mb-1">4. Mode Pertandingan</label>
-            <div class="font-display font-bold text-base text-slate-900 flex items-center gap-2">
+          <div class="bg-sky-50 p-4 xl:p-5 rounded-2xl border border-sky-200/80 flex flex-col justify-center">
+            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-sky-700 mb-1.5">4. Mode Pertandingan</label>
+            <div class="font-display font-bold text-base xl:text-xl text-slate-900 flex items-center gap-2">
               <span>👥 Khusus 4 Siswa</span>
             </div>
-            <p class="text-[11px] text-slate-600 mt-0.5">4 Pion berbeda • Start Petak 1 • 1 Bank Soal Bersama</p>
+            <p class="text-xs xl:text-sm text-slate-600 mt-1">4 Pion berbeda • Start Petak 1 • 1 Bank Soal Bersama</p>
           </div>
         </div>
 
         <!-- Input Nama 4 Siswa -->
-        <div class="mb-2 flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Masukkan Nama Keempat Siswa (Urutan Giliran 1 → 2 → 3 → 4)</span>
+        <div class="mb-2.5 flex items-center justify-between">
+          <span class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500">Masukkan Nama Keempat Siswa (Urutan Giliran 1 → 2 → 3 → 4)</span>
         </div>
-        <div id="playerNamesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6"></div>
+        <div id="playerNamesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-4 mb-6 xl:mb-8"></div>
 
         <!-- Preview Jumlah Soal & Tombol Mulai -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
-          <div class="flex items-center gap-3 text-sm">
-            <div class="px-3.5 py-2 rounded-xl bg-indigo-50 text-indigo-800 font-semibold border border-indigo-100">
-              Stok Soal Terfilter: <span id="filteredStockCount" class="font-bold text-indigo-600 text-base">50</span> soal unik siap diacak
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 xl:pt-5 border-t border-slate-100">
+          <div class="flex items-center gap-3 text-sm xl:text-base">
+            <div class="px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-800 font-semibold border border-indigo-100">
+              Stok Soal Terfilter: <span id="filteredStockCount" class="font-bold text-indigo-600 text-base xl:text-xl">50</span> soal unik siap diacak
             </div>
           </div>
-          <button onclick="startNewGameSession()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-display font-bold text-lg shadow-lg shadow-sky-500/30 transition transform active:scale-95 cursor-pointer">
+          <button onclick="startNewGameSession()" class="ifp-touch-target w-full sm:w-auto px-8 py-4 xl:px-10 xl:py-4 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-display font-bold text-lg xl:text-xl shadow-lg shadow-sky-500/30 transition transform active:scale-95 cursor-pointer">
             🚀 Mulai Petualangan Sekarang
           </button>
         </div>
       </div>
 
       <!-- ARENA PAPAN ULAR TANGGA (TERSEMBUNYI SAAT SETUP) -->
-      <div id="arenaPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div id="arenaPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-7 items-start">
 
         <!-- KOLOM KIRI: PAPAN PERMAINAN (7 KOLOM) -->
-        <div class="lg:col-span-7 bg-white p-3 sm:p-5 rounded-3xl shadow-lg border border-sky-100">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div class="lg:col-span-7 bg-white p-3 sm:p-5 xl:p-6 rounded-3xl shadow-lg border border-sky-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 xl:mb-4">
             <div class="flex items-center gap-2">
-              <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 text-xs font-bold" id="badgeSessionFilter">Kelas 4 • Semua Mapel</span>
-              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold" id="badgeRemainingPool">Sisa Antrean: 50 Soal</span>
+              <span class="px-3 py-1.5 rounded-xl bg-sky-100 text-sky-800 text-xs xl:text-sm font-bold" id="badgeSessionFilter">Kelas 4 • Semua Mapel</span>
+              <span class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs xl:text-sm font-bold" id="badgeRemainingPool">Sisa Antrean: 50 Soal</span>
             </div>
-            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-400 inline-block"></span> Tangga Naik</span>
-              <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-rose-400 inline-block"></span> Ular Turun</span>
+            <div class="flex items-center gap-3 text-xs xl:text-sm font-semibold text-slate-500">
+              <span class="inline-flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-sm bg-emerald-400 inline-block"></span> Tangga Naik</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded-sm bg-rose-400 inline-block"></span> Ular Turun</span>
             </div>
           </div>
 
-          <!-- WRAPPER PAPAN + SVG OVERLAY -->
-          <div class="relative w-full rounded-2xl overflow-hidden border-2 border-slate-800 shadow-inner bg-amber-50">
+          <!-- WRAPPER PAPAN + SVG OVERLAY (Dioptimalkan untuk tinggi layar IFP 1080p/4K) -->
+          <div class="relative w-full max-w-[70vh] mx-auto rounded-2xl overflow-hidden border-2 xl:border-4 border-slate-800 shadow-inner bg-amber-50">
             <div id="boardGrid" class="board-grid w-full"></div>
             <!-- SVG Garis Ular & Tangga -->
             <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
@@ -215,62 +226,68 @@
           </div>
         </div>
 
-        <!-- KOLOM KANAN: KONTROL GILIRAN, DADU & RIWAYAT SESI (5 KOLOM) -->
-        <div class="lg:col-span-5 space-y-4">
+        <!-- KOLOM KANAN: INFORMASI GILIRAN, KLASEMEN, RIWAYAT & TOMBOL AKSI DI BAGIAN BAWAH (5 KOLOM) -->
+        <div class="lg:col-span-5 flex flex-col justify-between space-y-4 xl:space-y-5">
 
-          <!-- Kartu Giliran & Dadu -->
-          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Giliran Saat Ini</span>
-              <button onclick="confirmRestartSession()" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl transition cursor-pointer">
-                🔄 Mulai Ulang / Ganti Pengaturan
-              </button>
-            </div>
+          <!-- Bagian Atas: Info Pemain Aktif, Klasemen & Log Soal -->
+          <div class="space-y-4 xl:space-y-5">
+            <!-- Kartu Giliran Saat Ini -->
+            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-400">Giliran Saat Ini</span>
+                <span id="activeTurnBadge" class="px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs xl:text-sm font-bold">Giliran 1/4 🎯</span>
+              </div>
 
-            <div id="activePlayerBanner" class="p-4 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-between mb-4 shadow-md">
-              <div class="flex items-center gap-3">
-                <div id="activePlayerAvatar" class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
-                  🦁
-                </div>
-                <div>
-                  <h3 id="activePlayerName" class="font-display font-bold text-xl leading-tight">Pemain 1</h3>
-                  <p id="activePlayerPosText" class="text-xs text-sky-100">Posisi Kotak: 1 • Skor: 0</p>
+              <div id="activePlayerBanner" class="p-4 xl:p-5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3.5">
+                  <div id="activePlayerAvatar" class="w-12 h-12 xl:w-16 xl:h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl xl:text-4xl font-bold">
+                    🦁
+                  </div>
+                  <div>
+                    <h3 id="activePlayerName" class="font-display font-bold text-xl xl:text-2xl leading-tight">Pemain 1</h3>
+                    <p id="activePlayerPosText" class="text-xs xl:text-sm text-sky-100 mt-0.5">Posisi Kotak: 1 • Skor: 0</p>
+                  </div>
                 </div>
               </div>
-              <span id="activeTurnBadge" class="px-3 py-1 rounded-full bg-white/20 text-xs font-bold">Siap Lempar Dadu</span>
             </div>
 
-            <!-- Area Dadu & Tombol Lempar -->
-            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
-              <div id="diceBox" class="w-16 h-16 rounded-2xl bg-white border-2 border-slate-300 shadow-md flex items-center justify-center text-3xl font-display font-bold text-indigo-700 select-none shrink-0">
+            <!-- Papan Klasemen Pemain -->
+            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
+              <h3 class="font-display font-bold text-base xl:text-lg text-slate-800 mb-2.5">🏆 Posisi & Skor 4 Siswa</h3>
+              <div id="scoreboardList" class="space-y-2"></div>
+            </div>
+
+            <!-- Log Riwayat Soal Anti-Pengulangan -->
+            <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-lg border border-sky-100">
+              <div class="flex items-center justify-between mb-1.5">
+                <h3 class="font-display font-bold text-sm xl:text-base text-slate-800">🛡️ Log Riwayat ID Soal Sesi Ini</h3>
+                <span id="usedCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">0 Terpakai</span>
+              </div>
+              <div id="usedQuestionsLog" class="max-h-24 xl:max-h-28 overflow-y-auto space-y-1 pr-1 text-xs">
+                <div class="text-slate-400 italic py-1.5 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bagian Paling Bawah: Dadu & Semua Tombol Klik Ramah Jangkauan Siswa Kelas 1 SD -->
+          <div class="bg-white p-4 xl:p-5 rounded-3xl shadow-xl border-2 border-amber-200 sticky bottom-2 z-20 space-y-3">
+            <div class="flex items-center gap-3.5 xl:gap-4">
+              <div id="diceBox" class="w-16 h-16 xl:w-20 xl:h-20 min-w-[4rem] xl:min-w-[5rem] xl:min-h-[5rem] rounded-2xl bg-amber-50 border-2 border-amber-300 shadow-inner flex items-center justify-center text-3xl xl:text-5xl font-display font-bold text-indigo-700 select-none shrink-0">
                 🎲
               </div>
               <div class="flex-1">
-                <p id="turnInstructionText" class="text-xs text-slate-600 mb-2 font-medium">
-                  Lempar dadu terlebih dahulu, lalu jawab 1 soal unik untuk melangkah!
+                <p id="turnInstructionText" class="text-xs xl:text-sm text-slate-700 mb-2 font-semibold">
+                  Tekan tombol di bawah untuk melempar dadu!
                 </p>
-                <button id="rollDiceBtn" onclick="handleRollDice()" class="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-display font-bold text-base shadow-md shadow-amber-500/20 transition transform active:scale-95 cursor-pointer">
+                <button id="rollDiceBtn" onclick="handleRollDice()" class="ifp-touch-target w-full py-4 xl:py-5 px-5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-display font-bold text-lg xl:text-2xl shadow-lg shadow-amber-500/30 transition transform active:scale-95 cursor-pointer">
                   🎲 Lempar Dadu & Ambil Soal
                 </button>
               </div>
             </div>
-          </div>
-
-          <!-- Papan Klasemen Pemain -->
-          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
-            <h3 class="font-display font-bold text-base text-slate-800 mb-3">🏆 Posisi & Skor Pemain</h3>
-            <div id="scoreboardList" class="space-y-2.5"></div>
-          </div>
-
-          <!-- Log Riwayat Soal Anti-Pengulangan -->
-          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-display font-bold text-base text-slate-800">🛡️ Log Riwayat ID Soal Sesi Ini</h3>
-              <span id="usedCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">0 Terpakai</span>
-            </div>
-            <p class="text-xs text-slate-500 mb-3">Semua pemain berbagi antrean soal yang sama. ID di bawah ini terkunci dan tidak akan muncul lagi hingga sesi di-reset.</p>
-            <div id="usedQuestionsLog" class="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-xs">
-              <div class="text-slate-400 italic py-2 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>
+            <div class="pt-2 border-t border-slate-100 flex justify-end">
+              <button onclick="confirmRestartSession()" class="ifp-touch-target w-full sm:w-auto text-xs xl:text-sm font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl transition cursor-pointer">
+                🔄 Mulai Ulang / Pengaturan
+              </button>
             </div>
           </div>
 
@@ -279,133 +296,78 @@
     </section>
 
     <!-- =========================================================
-         VIEW 2: HALAMAN GURU (MANAJEMEN BANK SOAL & IMPOR JSON)
-    ========================================================== -->
-    <section id="viewTeacher" class="hidden space-y-5 animate-pop">
-      <div class="bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-sky-100">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Manajemen Bank Soal — SDN Kesilir 02</h2>
-            <p class="text-sm text-slate-500">Kelola soal bawaan dan tambahan guru. Semua perubahan otomatis terhubung ke sistem anti-pengulangan.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="openQuestionFormModal()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
-              ➕ Tambah Soal Baru
-            </button>
-            <button onclick="openImportJsonModal()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
-              📥 Impor JSON
-            </button>
-            <button onclick="exportBankJson()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
-              📤 Ekspor JSON
-            </button>
-          </div>
-        </div>
-
-        <!-- Ringkasan Statistik Per Kelas -->
-        <div id="teacherStatsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 my-4"></div>
-
-        <!-- Filter Pencarian Guru -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-4">
-          <input type="text" id="tSearchInput" oninput="renderTeacherTable()" placeholder="Cari pertanyaan, materi, atau ID..." class="lg:col-span-2 p-2.5 rounded-xl bg-white border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
-          <select id="tFilterKelas" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
-            <option value="ALL">Semua Kelas</option>
-            <option value="1">Kelas 1</option>
-            <option value="2">Kelas 2</option>
-            <option value="3">Kelas 3</option>
-            <option value="4">Kelas 4</option>
-            <option value="5">Kelas 5</option>
-            <option value="6">Kelas 6</option>
-          </select>
-          <select id="tFilterMapel" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
-            <option value="ALL">Semua Mapel</option>
-            <option value="Matematika">Matematika</option>
-            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-            <option value="IPAS">IPAS</option>
-            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-            <option value="Bahasa Inggris">Bahasa Inggris</option>
-            <option value="Pendidikan Agama">Pendidikan Agama</option>
-            <option value="Seni Budaya">Seni Budaya</option>
-            <option value="PJOK">PJOK</option>
-          </select>
-          <select id="tFilterTingkat" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
-            <option value="ALL">Semua Tingkat</option>
-            <option value="Mudah">Mudah</option>
-            <option value="Sedang">Sedang</option>
-            <option value="Sulit">Sulit</option>
-          </select>
-        </div>
-
-        <!-- Tabel Daftar Soal -->
-        <div class="overflow-x-auto rounded-2xl border border-slate-200">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-100 text-slate-700 text-xs uppercase">
-              <tr>
-                <th class="p-3 font-bold">ID Soal</th>
-                <th class="p-3 font-bold">Kelas & Mapel</th>
-                <th class="p-3 font-bold">Pertanyaan & Pilihan</th>
-                <th class="p-3 font-bold">Kunci & Pembahasan</th>
-                <th class="p-3 font-bold text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="teacherTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
-          </table>
-        </div>
-        <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
-          <span id="teacherShowingText">Menampilkan soal...</span>
-          <button onclick="resetCustomQuestions()" class="text-rose-600 hover:underline font-semibold cursor-pointer">Reset Tambahan Guru ke Bawaan (300 Soal)</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- =========================================================
-       MODAL 1: KUIS AKTIF (ANTI-PENGULANGAN & ACAK OPSI)
+       MODAL 1: KUIS AKTIF (SOAL DI ATAS, SEMUA TOMBOL JAWABAN DI BAWAH)
   ========================================================== -->
-  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-sky-100 overflow-hidden animate-pop my-auto">
-      <!-- Header Modal Kuis -->
-      <div class="bg-gradient-to-r from-indigo-600 to-sky-600 p-4 sm:p-5 text-white flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <span id="qModalIdBadge" class="px-2.5 py-1 rounded-lg bg-white/20 font-mono text-xs font-bold">ID: MTK4-001</span>
-          <span id="qModalMetaBadge" class="px-2.5 py-1 rounded-lg bg-amber-400 text-slate-900 text-xs font-bold">Kelas 4 • Matematika</span>
+  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-between p-3 sm:p-5 xl:p-8 overflow-y-auto">
+    <div class="bg-white w-full max-w-3xl xl:max-w-5xl mx-auto rounded-3xl shadow-2xl border border-sky-100 overflow-hidden animate-pop flex flex-col justify-between min-h-[85vh] xl:min-h-[82vh]">
+      
+      <!-- BAGIAN ATAS MODAL: HEADER & PERTANYAAN SOAL -->
+      <div>
+        <div class="bg-gradient-to-r from-indigo-600 to-sky-600 p-4 sm:p-5 xl:p-6 text-white flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span id="qModalIdBadge" class="px-3 py-1 rounded-lg bg-white/20 font-mono text-xs xl:text-sm font-bold">ID: MTK4-001</span>
+            <span id="qModalMetaBadge" class="px-3 py-1 rounded-lg bg-amber-400 text-slate-900 text-xs xl:text-sm font-bold">Kelas 4 • Matematika</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="qModalPlayerBadge" class="text-xs xl:text-sm font-bold bg-slate-900/30 px-3.5 py-1.5 rounded-full">Giliran: Pemain 1</span>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <span id="qModalPlayerBadge" class="text-xs font-bold bg-slate-900/30 px-3 py-1 rounded-full">Giliran: Pemain 1</span>
+
+        <div class="p-4 sm:p-6 xl:p-7 space-y-3 xl:space-y-4">
+          <div class="flex items-center justify-between text-xs xl:text-sm text-slate-500">
+            <span id="qModalMateri" class="font-semibold text-indigo-600">Materi: Bilangan</span>
+            <span id="qModalTingkat" class="px-2.5 py-1 rounded bg-slate-100 font-bold text-slate-700">Tingkat: Mudah</span>
+          </div>
+
+          <div class="p-4 xl:p-6 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <p id="qModalQuestionText" class="text-lg sm:text-xl xl:text-3xl font-bold text-slate-900 leading-relaxed">
+              Pertanyaan akan tampil di sini...
+            </p>
+          </div>
         </div>
       </div>
 
-      <!-- Body Pertanyaan -->
-      <div class="p-5 sm:p-6 space-y-4">
-        <div class="flex items-center justify-between text-xs text-slate-500">
-          <span id="qModalMateri" class="font-semibold text-indigo-600">Materi: Bilangan</span>
-          <span id="qModalTingkat" class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-700">Tingkat: Mudah</span>
+      <!-- BAGIAN BAWAH MODAL: SEMUA TOMBOL JAWABAN & LANJUTKAN (MUDAH DIJANGKAU SISWA KELAS 1 SD) -->
+      <div class="p-4 sm:p-6 xl:p-7 pt-2 bg-slate-50/70 border-t border-slate-200/80 space-y-4">
+        <div class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-400 text-center">
+          👇 Sentuh Salah Satu Jawaban di Bawah Ini 👇
         </div>
 
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-          <p id="qModalQuestionText" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed">
-            Pertanyaan akan tampil di sini...
-          </p>
-        </div>
+        <!-- 4 Pilihan Jawaban Besar di Bawah -->
+        <div id="qModalOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 xl:gap-4"></div>
 
-        <!-- 4 Pilihan Jawaban (Diacak & Kunci Disesuaikan) -->
-        <div id="qModalOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-
-        <!-- Box Feedback & Pembahasan -->
-        <div id="qModalFeedbackBox" class="hidden p-4 rounded-2xl border-2 space-y-2 animate-pop">
-          <div class="flex items-center gap-2">
-            <span id="qFeedbackIcon" class="text-2xl">✅</span>
-            <h4 id="qFeedbackTitle" class="font-display font-bold text-lg">JAWABAN BENAR!</h4>
+        <!-- Box Feedback & Tombol Lanjutkan di Paling Bawah -->
+        <div id="qModalFeedbackBox" class="hidden p-4 xl:p-5 rounded-2xl border-2 space-y-3 animate-pop">
+          <div class="flex items-center gap-2.5">
+            <span id="qFeedbackIcon" class="text-2xl xl:text-3xl">✅</span>
+            <h4 id="qFeedbackTitle" class="font-display font-bold text-lg xl:text-2xl">JAWABAN BENAR!</h4>
           </div>
-          <p id="qFeedbackCorrectAnswer" class="text-sm font-bold"></p>
-          <p id="qFeedbackExplanation" class="text-sm text-slate-700 bg-white/80 p-3 rounded-xl border border-slate-200/60"></p>
-          <div class="pt-2 flex justify-end">
-            <button id="qContinueBtn" onclick="finalizeQuizTurn()" class="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow transition cursor-pointer">
+          <p id="qFeedbackCorrectAnswer" class="text-sm xl:text-base font-bold"></p>
+          <p id="qFeedbackExplanation" class="text-sm xl:text-base text-slate-700 bg-white/80 p-3 rounded-xl border border-slate-200/60"></p>
+          <div class="pt-1">
+            <button id="qContinueBtn" onclick="finalizeQuizTurn()" class="ifp-touch-target w-full py-4 xl:py-5 px-7 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-base xl:text-xl shadow-lg transition transform active:scale-95 cursor-pointer">
               Lanjutkan Langkah Bidak ➡️
             </button>
           </div>
         </div>
       </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: NOTIFIKASI BANK SOAL HABIS / PEMENANG / DIALOG
+  ========================================================== -->
+  <div id="systemDialogModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 xl:p-8">
+    <div class="bg-white w-full max-w-md xl:max-w-xl rounded-3xl p-6 xl:p-8 shadow-2xl border border-slate-100 text-center space-y-4 xl:space-y-5 animate-pop">
+      <div id="sysDialogIcon" class="w-16 h-16 xl:w-20 xl:h-20 mx-auto rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-4xl xl:text-5xl">
+        ⚠️
+      </div>
+      <h3 id="sysDialogTitle" class="font-display font-bold text-2xl xl:text-3xl text-slate-900">BANK SOAL HABIS</h3>
+      <p id="sysDialogMessage" class="text-sm xl:text-base text-slate-600 leading-relaxed">
+        Seluruh soal unik dalam antrean sesi ini telah digunakan. Sistem mencegah pengulangan soal yang sama.
+      </p>
+      <div id="sysDialogActions" class="flex flex-col sm:flex-row gap-3 pt-2 justify-center"></div>
     </div>
   </div>
 
@@ -1303,7 +1265,7 @@
         const center = getCellCenterPercent(p.position);
         const off = offsets[idx % offsets.length];
         const pawn = document.createElement('div');
-        pawn.className = `pawn absolute w-7 h-7 sm:w-9 sm:h-9 -ml-3.5 -mt-3.5 sm:-ml-4.5 sm:-mt-4.5 rounded-full ${p.theme.bg} text-white border-2 border-white flex items-center justify-center text-sm sm:text-base font-bold`;
+        pawn.className = `pawn absolute w-7 h-7 sm:w-9 sm:h-9 xl:w-11 xl:h-11 -ml-3.5 -mt-3.5 sm:-ml-4.5 sm:-mt-4.5 xl:-ml-5.5 xl:-mt-5.5 rounded-full ${p.theme.bg} text-white border-2 xl:border-[3px] border-white flex items-center justify-center text-sm sm:text-base xl:text-xl font-bold`;
         pawn.style.left = `${center.x + off.dx}%`;
         pawn.style.top = `${center.y + off.dy}%`;
         pawn.title = `${p.name} (Kotak ${p.position})`;
@@ -1338,15 +1300,15 @@
       for (let idx = 0; idx < 4; idx++) {
         const theme = PLAYER_THEMES[idx];
         const div = document.createElement('div');
-        div.className = `p-3.5 rounded-2xl border-2 ${theme.light} border-slate-200 flex items-center gap-3`;
+        div.className = `p-3.5 xl:p-4 rounded-2xl border-2 ${theme.light} border-slate-200 flex items-center gap-3.5`;
         div.innerHTML = `
-          <span class="w-11 h-11 rounded-2xl ${theme.bg} text-white flex items-center justify-center text-xl shadow-sm shrink-0">${theme.avatar}</span>
+          <span class="w-11 h-11 xl:w-14 xl:h-14 rounded-2xl ${theme.bg} text-white flex items-center justify-center text-xl xl:text-2xl shadow-sm shrink-0">${theme.avatar}</span>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-extrabold ${theme.text}">Pemain ${idx + 1}</label>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/80 text-slate-600">${theme.colorName}</span>
+              <label class="text-xs xl:text-sm font-extrabold ${theme.text}">Pemain ${idx + 1}</label>
+              <span class="text-[10px] xl:text-xs font-bold px-2 py-0.5 rounded bg-white/80 text-slate-600">${theme.colorName}</span>
             </div>
-            <input type="text" data-player-idx="${idx}" placeholder="Nama Siswa ${idx + 1}" value="Siswa ${idx + 1}" class="player-name-input w-full bg-white px-2.5 py-1.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" />
+            <input type="text" data-player-idx="${idx}" placeholder="Nama Siswa ${idx + 1}" value="Siswa ${idx + 1}" class="player-name-input w-full bg-white px-3 py-2 xl:py-2.5 rounded-xl border border-slate-300 text-sm xl:text-base font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" />
           </div>
         `;
         container.appendChild(div);
@@ -1453,21 +1415,21 @@
       sb.innerHTML = gameState.players.map((p, idx) => {
         const isCurrent = idx === gameState.currentPlayerIndex;
         return `
-          <div class="p-3 rounded-2xl border ${isCurrent ? 'border-sky-500 bg-sky-50/70 shadow-sm' : 'border-slate-200 bg-slate-50/50'} flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="w-9 h-9 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-base shadow-sm">${p.theme.avatar}</span>
+          <div class="p-3 xl:p-3.5 rounded-2xl border ${isCurrent ? 'border-sky-500 bg-sky-50/70 shadow-sm' : 'border-slate-200 bg-slate-50/50'} flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 xl:w-11 xl:h-11 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-base xl:text-xl shadow-sm">${p.theme.avatar}</span>
               <div>
-                <div class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-                  <span class="text-xs font-extrabold ${p.theme.text}">P${p.turnNumber}</span>
+                <div class="font-bold text-sm xl:text-base text-slate-900 flex items-center gap-1.5">
+                  <span class="text-xs xl:text-sm font-extrabold ${p.theme.text}">P${p.turnNumber}</span>
                   <span>${p.name}</span>
-                  ${isCurrent ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-600 text-white">GILIRAN</span>' : ''}
+                  ${isCurrent ? '<span class="text-[10px] xl:text-xs px-2 py-0.5 rounded bg-sky-600 text-white">GILIRAN</span>' : ''}
                 </div>
-                <div class="text-[11px] text-slate-500">Benar: ${p.correctCount} • Salah: ${p.wrongCount}</div>
+                <div class="text-[11px] xl:text-xs text-slate-500">Benar: ${p.correctCount} • Salah: ${p.wrongCount}</div>
               </div>
             </div>
             <div class="text-right">
-              <div class="font-display font-bold text-base text-indigo-700">Petak ${p.position}</div>
-              <div class="text-[11px] font-bold text-slate-500">${p.score} pts</div>
+              <div class="font-display font-bold text-base xl:text-lg text-indigo-700">Petak ${p.position}</div>
+              <div class="text-[11px] xl:text-xs font-bold text-slate-500">${p.score} pts</div>
             </div>
           </div>
         `;
@@ -1555,10 +1517,10 @@
         <button
           id="optBtn-${idx}"
           onclick="submitQuizAnswer(${idx})"
-          class="quiz-opt-btn text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition flex items-start gap-3 cursor-pointer disabled:cursor-default"
+          class="quiz-opt-btn ifp-touch-target text-left p-4 xl:p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition flex items-start gap-3.5 cursor-pointer disabled:cursor-default"
         >
-          <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">${labels[idx]}</span>
-          <span class="text-sm font-semibold text-slate-800 pt-0.5">${optText}</span>
+          <span class="w-8 h-8 xl:w-10 xl:h-10 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm xl:text-lg flex items-center justify-center shrink-0">${labels[idx]}</span>
+          <span class="text-sm xl:text-lg font-semibold text-slate-800 pt-1">${optText}</span>
         </button>
       `).join('');
 
@@ -2171,8 +2133,8 @@
       buttons.forEach(btn => {
         const b = document.createElement('button');
         b.className = btn.primary
-          ? 'px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow cursor-pointer'
-          : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm cursor-pointer';
+          ? 'ifp-touch-target px-6 py-3 xl:px-7 xl:py-3.5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm xl:text-base shadow cursor-pointer'
+          : 'ifp-touch-target px-6 py-3 xl:px-7 xl:py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm xl:text-base cursor-pointer';
         b.textContent = btn.label;
         b.onclick = btn.action;
         actionsEl.appendChild(b);
