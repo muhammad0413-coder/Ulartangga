@@ -296,6 +296,93 @@
     </section>
 
     <!-- =========================================================
+         VIEW 2: HALAMAN GURU (MANAJEMEN BANK SOAL)
+    ========================================================== -->
+    <section id="viewTeacher" class="hidden space-y-5 xl:space-y-6 animate-pop">
+      <div class="bg-white rounded-3xl p-5 sm:p-7 xl:p-8 shadow-lg border border-sky-100">
+        <!-- Header & Tombol Aksi Guru -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl sm:text-2xl xl:text-3xl font-bold text-slate-900">📚 Halaman Guru — Manajemen Bank Soal</h2>
+            <p class="text-xs sm:text-sm xl:text-base text-slate-500 mt-1">Kelola soal bawaan & tambahan SDN Kesilir 02. Semua soal otomatis terhubung ke sistem anti-pengulangan.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="openQuestionFormModal('')" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm xl:text-base font-bold shadow-sm transition cursor-pointer">
+              ➕ Tambah Soal Baru
+            </button>
+            <button onclick="openImportJsonModal()" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm xl:text-base font-bold shadow-sm transition cursor-pointer">
+              📥 Impor JSON
+            </button>
+            <button onclick="exportBankJson()" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm xl:text-base font-bold shadow-sm transition cursor-pointer">
+              📤 Ekspor JSON
+            </button>
+            <button onclick="resetCustomQuestions()" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs sm:text-sm xl:text-base font-bold transition cursor-pointer">
+              🔄 Reset Tambahan Guru
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistik Jumlah Soal Per Kelas -->
+        <div id="teacherStatsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 my-5"></div>
+
+        <!-- Bar Pencarian & Filter Bank Soal -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/70">
+          <input type="text" id="tSearchInput" oninput="renderTeacherTable()" placeholder="🔍 Cari ID, pertanyaan, atau materi..." class="ifp-touch-target w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
+          
+          <select id="tFilterKelas" onchange="renderTeacherTable()" class="ifp-touch-target w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Kelas (1 - 6 SD)</option>
+            <option value="1">Kelas 1 SD</option>
+            <option value="2">Kelas 2 SD</option>
+            <option value="3">Kelas 3 SD</option>
+            <option value="4">Kelas 4 SD</option>
+            <option value="5">Kelas 5 SD</option>
+            <option value="6">Kelas 6 SD</option>
+          </select>
+
+          <select id="tFilterMapel" onchange="renderTeacherTable()" class="ifp-touch-target w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Mata Pelajaran</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="IPAS">IPAS</option>
+            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+            <option value="Bahasa Inggris">Bahasa Inggris</option>
+            <option value="Pendidikan Agama">Pendidikan Agama</option>
+            <option value="Seni Budaya">Seni Budaya</option>
+            <option value="PJOK">PJOK</option>
+          </select>
+
+          <select id="tFilterTingkat" onchange="renderTeacherTable()" class="ifp-touch-target w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Tingkat Kesulitan</option>
+            <option value="Mudah">Mudah</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Sulit">Sulit</option>
+          </select>
+        </div>
+
+        <div id="teacherShowingText" class="text-xs sm:text-sm font-semibold text-slate-500 mb-3">
+          Menampilkan soal...
+        </div>
+
+        <!-- Tabel Daftar Soal -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+                <th class="p-3 font-bold">ID Soal</th>
+                <th class="p-3 font-bold">Kelas / Mapel</th>
+                <th class="p-3 font-bold">Pertanyaan & Pilihan Jawaban</th>
+                <th class="p-3 font-bold">Kunci & Pembahasan</th>
+                <th class="p-3 font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="teacherTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================
        MODAL 1: KUIS AKTIF (SOAL DI ATAS, SEMUA TOMBOL JAWABAN DI BAWAH)
   ========================================================== -->
   <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-between p-3 sm:p-5 xl:p-8 overflow-y-auto">
