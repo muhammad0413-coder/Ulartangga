@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ular Tangga Pintar — Petualangan Kuis | SDN Kesilir 02</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fefce8 100%);
+      min-height: 100vh;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      aspect-ratio: 1 / 1;
+    }
+    .board-cell {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      user-select: none;
+      transition: transform 0.15s ease;
+    }
+    @media (min-width: 640px) {
+      .board-cell {
+        padding: 4px;
+        font-size: 0.85rem;
+      }
+    }
+    .pawn {
+      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+    @keyframes diceRoll {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(90deg) scale(1.15); }
+      50% { transform: rotate(180deg) scale(0.95); }
+      75% { transform: rotate(270deg) scale(1.15); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .rolling {
+      animation: diceRoll 0.45s ease-in-out infinite;
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; rounded: 8px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900">
+
+  <!-- HEADER UTAMA -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-display font-bold text-xl shadow-md">
+          🎲
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Ular Tangga Pintar</h1>
+            <span class="px-2 py-0.5 text-[11px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">SDN KESILIR 02</span>
+          </div>
+          <p class="text-xs text-slate-500">Petualangan Kuis Interaktif • Sistem Anti-Pengulangan Soal</p>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-2">
+        <button id="navGameBtn" onclick="switchView('game')" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
+          🎮 Arena Permainan
+        </button>
+        <button id="navTeacherBtn" onclick="switchView('teacher')" class="px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5">
+          <span>📚 Halaman Guru</span>
+          <span id="totalBankBadge" class="px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-md font-bold">300</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main class="max-w-7xl mx-auto px-4 py-5">
+
+    <!-- =========================================================
+         VIEW 1: SETUP & ARENA PERMAINAN
+    ========================================================== -->
+    <section id="viewGame" class="space-y-5">
+
+      <!-- PANEL PENGATURAN SESI BARU -->
+      <div id="setupPanel" class="bg-white rounded-3xl p-5 sm:p-7 shadow-lg border border-sky-100 animate-pop">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-5">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Pengaturan Petualangan Kuis</h2>
+            <p class="text-sm text-slate-500">Pilih jenjang kelas, mata pelajaran, dan mode pemain. Sistem menjamin 0% soal berulang dalam 1 sesi!</p>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Anti-Duplikasi Aktif
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Filter Kelas -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">1. Jenjang Kelas</label>
+            <select id="cfgKelas" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="ALL">Semua Kelas (1 - 6 SD)</option>
+              <option value="1">Kelas 1 SD</option>
+              <option value="2">Kelas 2 SD</option>
+              <option value="3">Kelas 3 SD</option>
+              <option value="4" selected>Kelas 4 SD</option>
+              <option value="5">Kelas 5 SD</option>
+              <option value="6">Kelas 6 SD</option>
+            </select>
+          </div>
+
+          <!-- Filter Mata Pelajaran -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">2. Mata Pelajaran</label>
+            <select id="cfgMapel" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="ALL">Semua Mata Pelajaran (8 Mapel)</option>
+              <option value="Matematika">Matematika</option>
+              <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+              <option value="IPAS">IPAS</option>
+              <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+              <option value="Bahasa Inggris">Bahasa Inggris</option>
+              <option value="Pendidikan Agama">Pendidikan Agama</option>
+              <option value="Seni Budaya">Seni Budaya</option>
+              <option value="PJOK">PJOK</option>
+            </select>
+          </div>
+
+          <!-- Filter Tingkat Kesulitan -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">3. Tingkat Kesulitan</label>
+            <select id="cfgTingkat" onchange="updateFilteredCountPreview()" class="w-full p-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+              <option value="ALL">Semua Tingkat (Mudah - Sulit)</option>
+              <option value="Mudah">Mudah</option>
+              <option value="Sedang">Sedang</option>
+              <option value="Sulit">Sulit</option>
+            </select>
+          </div>
+
+          <!-- Mode Permainan Khusus 4 Siswa -->
+          <div class="bg-sky-50 p-4 rounded-2xl border border-sky-200/80 flex flex-col justify-center">
+            <label class="block text-xs font-bold uppercase tracking-wider text-sky-700 mb-1">4. Mode Pertandingan</label>
+            <div class="font-display font-bold text-base text-slate-900 flex items-center gap-2">
+              <span>👥 Khusus 4 Siswa</span>
+            </div>
+            <p class="text-[11px] text-slate-600 mt-0.5">4 Pion berbeda • Start Petak 1 • 1 Bank Soal Bersama</p>
+          </div>
+        </div>
+
+        <!-- Input Nama 4 Siswa -->
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Masukkan Nama Keempat Siswa (Urutan Giliran 1 → 2 → 3 → 4)</span>
+        </div>
+        <div id="playerNamesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6"></div>
+
+        <!-- Preview Jumlah Soal & Tombol Mulai -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <div class="flex items-center gap-3 text-sm">
+            <div class="px-3.5 py-2 rounded-xl bg-indigo-50 text-indigo-800 font-semibold border border-indigo-100">
+              Stok Soal Terfilter: <span id="filteredStockCount" class="font-bold text-indigo-600 text-base">50</span> soal unik siap diacak
+            </div>
+          </div>
+          <button onclick="startNewGameSession()" class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-display font-bold text-lg shadow-lg shadow-sky-500/30 transition transform active:scale-95 cursor-pointer">
+            🚀 Mulai Petualangan Sekarang
+          </button>
+        </div>
+      </div>
+
+      <!-- ARENA PAPAN ULAR TANGGA (TERSEMBUNYI SAAT SETUP) -->
+      <div id="arenaPanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- KOLOM KIRI: PAPAN PERMAINAN (7 KOLOM) -->
+        <div class="lg:col-span-7 bg-white p-3 sm:p-5 rounded-3xl shadow-lg border border-sky-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 text-xs font-bold" id="badgeSessionFilter">Kelas 4 • Semua Mapel</span>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold" id="badgeRemainingPool">Sisa Antrean: 50 Soal</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-400 inline-block"></span> Tangga Naik</span>
+              <span class="inline-flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-rose-400 inline-block"></span> Ular Turun</span>
+            </div>
+          </div>
+
+          <!-- WRAPPER PAPAN + SVG OVERLAY -->
+          <div class="relative w-full rounded-2xl overflow-hidden border-2 border-slate-800 shadow-inner bg-amber-50">
+            <div id="boardGrid" class="board-grid w-full"></div>
+            <!-- SVG Garis Ular & Tangga -->
+            <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+            <!-- Layer Bidak Pemain -->
+            <div id="pawnsLayer" class="absolute inset-0 w-full h-full pointer-events-none z-20"></div>
+          </div>
+        </div>
+
+        <!-- KOLOM KANAN: KONTROL GILIRAN, DADU & RIWAYAT SESI (5 KOLOM) -->
+        <div class="lg:col-span-5 space-y-4">
+
+          <!-- Kartu Giliran & Dadu -->
+          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Giliran Saat Ini</span>
+              <button onclick="confirmRestartSession()" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl transition cursor-pointer">
+                🔄 Mulai Ulang / Ganti Pengaturan
+              </button>
+            </div>
+
+            <div id="activePlayerBanner" class="p-4 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white flex items-center justify-between mb-4 shadow-md">
+              <div class="flex items-center gap-3">
+                <div id="activePlayerAvatar" class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
+                  🦁
+                </div>
+                <div>
+                  <h3 id="activePlayerName" class="font-display font-bold text-xl leading-tight">Pemain 1</h3>
+                  <p id="activePlayerPosText" class="text-xs text-sky-100">Posisi Kotak: 1 • Skor: 0</p>
+                </div>
+              </div>
+              <span id="activeTurnBadge" class="px-3 py-1 rounded-full bg-white/20 text-xs font-bold">Siap Lempar Dadu</span>
+            </div>
+
+            <!-- Area Dadu & Tombol Lempar -->
+            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+              <div id="diceBox" class="w-16 h-16 rounded-2xl bg-white border-2 border-slate-300 shadow-md flex items-center justify-center text-3xl font-display font-bold text-indigo-700 select-none shrink-0">
+                🎲
+              </div>
+              <div class="flex-1">
+                <p id="turnInstructionText" class="text-xs text-slate-600 mb-2 font-medium">
+                  Lempar dadu terlebih dahulu, lalu jawab 1 soal unik untuk melangkah!
+                </p>
+                <button id="rollDiceBtn" onclick="handleRollDice()" class="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-display font-bold text-base shadow-md shadow-amber-500/20 transition transform active:scale-95 cursor-pointer">
+                  🎲 Lempar Dadu & Ambil Soal
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Papan Klasemen Pemain -->
+          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
+            <h3 class="font-display font-bold text-base text-slate-800 mb-3">🏆 Posisi & Skor Pemain</h3>
+            <div id="scoreboardList" class="space-y-2.5"></div>
+          </div>
+
+          <!-- Log Riwayat Soal Anti-Pengulangan -->
+          <div class="bg-white p-5 rounded-3xl shadow-lg border border-sky-100">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-base text-slate-800">🛡️ Log Riwayat ID Soal Sesi Ini</h3>
+              <span id="usedCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">0 Terpakai</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Semua pemain berbagi antrean soal yang sama. ID di bawah ini terkunci dan tidak akan muncul lagi hingga sesi di-reset.</p>
+            <div id="usedQuestionsLog" class="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-xs">
+              <div class="text-slate-400 italic py-2 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         VIEW 2: HALAMAN GURU (MANAJEMEN BANK SOAL & IMPOR JSON)
+    ========================================================== -->
+    <section id="viewTeacher" class="hidden space-y-5 animate-pop">
+      <div class="bg-white p-5 sm:p-6 rounded-3xl shadow-lg border border-sky-100">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Manajemen Bank Soal — SDN Kesilir 02</h2>
+            <p class="text-sm text-slate-500">Kelola soal bawaan dan tambahan guru. Semua perubahan otomatis terhubung ke sistem anti-pengulangan.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="openQuestionFormModal()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
+              ➕ Tambah Soal Baru
+            </button>
+            <button onclick="openImportJsonModal()" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
+              📥 Impor JSON
+            </button>
+            <button onclick="exportBankJson()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-sm transition cursor-pointer">
+              📤 Ekspor JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Ringkasan Statistik Per Kelas -->
+        <div id="teacherStatsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 my-4"></div>
+
+        <!-- Filter Pencarian Guru -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/80 mb-4">
+          <input type="text" id="tSearchInput" oninput="renderTeacherTable()" placeholder="Cari pertanyaan, materi, atau ID..." class="lg:col-span-2 p-2.5 rounded-xl bg-white border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-sky-500" />
+          <select id="tFilterKelas" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Kelas</option>
+            <option value="1">Kelas 1</option>
+            <option value="2">Kelas 2</option>
+            <option value="3">Kelas 3</option>
+            <option value="4">Kelas 4</option>
+            <option value="5">Kelas 5</option>
+            <option value="6">Kelas 6</option>
+          </select>
+          <select id="tFilterMapel" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Mapel</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="IPAS">IPAS</option>
+            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+            <option value="Bahasa Inggris">Bahasa Inggris</option>
+            <option value="Pendidikan Agama">Pendidikan Agama</option>
+            <option value="Seni Budaya">Seni Budaya</option>
+            <option value="PJOK">PJOK</option>
+          </select>
+          <select id="tFilterTingkat" onchange="renderTeacherTable()" class="p-2.5 rounded-xl bg-white border border-slate-300 text-sm font-semibold">
+            <option value="ALL">Semua Tingkat</option>
+            <option value="Mudah">Mudah</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Sulit">Sulit</option>
+          </select>
+        </div>
+
+        <!-- Tabel Daftar Soal -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-100 text-slate-700 text-xs uppercase">
+              <tr>
+                <th class="p-3 font-bold">ID Soal</th>
+                <th class="p-3 font-bold">Kelas & Mapel</th>
+                <th class="p-3 font-bold">Pertanyaan & Pilihan</th>
+                <th class="p-3 font-bold">Kunci & Pembahasan</th>
+                <th class="p-3 font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="teacherTableBody" class="divide-y divide-slate-200 bg-white"></tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+          <span id="teacherShowingText">Menampilkan soal...</span>
+          <button onclick="resetCustomQuestions()" class="text-rose-600 hover:underline font-semibold cursor-pointer">Reset Tambahan Guru ke Bawaan (300 Soal)</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       MODAL 1: KUIS AKTIF (ANTI-PENGULANGAN & ACAK OPSI)
+  ========================================================== -->
+  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-sky-100 overflow-hidden animate-pop my-auto">
+      <!-- Header Modal Kuis -->
+      <div class="bg-gradient-to-r from-indigo-600 to-sky-600 p-4 sm:p-5 text-white flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span id="qModalIdBadge" class="px-2.5 py-1 rounded-lg bg-white/20 font-mono text-xs font-bold">ID: MTK4-001</span>
+          <span id="qModalMetaBadge" class="px-2.5 py-1 rounded-lg bg-amber-400 text-slate-900 text-xs font-bold">Kelas 4 • Matematika</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="qModalPlayerBadge" class="text-xs font-bold bg-slate-900/30 px-3 py-1 rounded-full">Giliran: Pemain 1</span>
+        </div>
+      </div>
+
+      <!-- Body Pertanyaan -->
+      <div class="p-5 sm:p-6 space-y-4">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span id="qModalMateri" class="font-semibold text-indigo-600">Materi: Bilangan</span>
+          <span id="qModalTingkat" class="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-700">Tingkat: Mudah</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <p id="qModalQuestionText" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed">
+            Pertanyaan akan tampil di sini...
+          </p>
+        </div>
+
+        <!-- 4 Pilihan Jawaban (Diacak & Kunci Disesuaikan) -->
+        <div id="qModalOptionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+        <!-- Box Feedback & Pembahasan -->
+        <div id="qModalFeedbackBox" class="hidden p-4 rounded-2xl border-2 space-y-2 animate-pop">
+          <div class="flex items-center gap-2">
+            <span id="qFeedbackIcon" class="text-2xl">✅</span>
+            <h4 id="qFeedbackTitle" class="font-display font-bold text-lg">JAWABAN BENAR!</h4>
+          </div>
+          <p id="qFeedbackCorrectAnswer" class="text-sm font-bold"></p>
+          <p id="qFeedbackExplanation" class="text-sm text-slate-700 bg-white/80 p-3 rounded-xl border border-slate-200/60"></p>
+          <div class="pt-2 flex justify-end">
+            <button id="qContinueBtn" onclick="finalizeQuizTurn()" class="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow transition cursor-pointer">
+              Lanjutkan Langkah Bidak ➡️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: NOTIFIKASI BANK SOAL HABIS / PEMENANG / DIALOG
+  ========================================================== -->
+  <div id="systemDialogModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-100 text-center space-y-4 animate-pop">
+      <div id="sysDialogIcon" class="w-16 h-16 mx-auto rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-4xl">
+        ⚠️
+      </div>
+      <h3 id="sysDialogTitle" class="font-display font-bold text-2xl text-slate-900">BANK SOAL HABIS</h3>
+      <p id="sysDialogMessage" class="text-sm text-slate-600 leading-relaxed">
+        Seluruh soal unik dalam antrean sesi ini telah digunakan. Sistem mencegah pengulangan soal yang sama.
+      </p>
+      <div id="sysDialogActions" class="flex flex-col sm:flex-row gap-2.5 pt-2 justify-center"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: FORM TAMBAH / EDIT SOAL GURU
+  ========================================================== -->
+  <div id="teacherFormModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 my-auto animate-pop">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 id="tFormModalTitle" class="font-display font-bold text-xl text-slate-900">Tambah Soal Baru</h3>
+        <button onclick="closeModal('teacherFormModal')" class="text-slate-400 hover:text-slate-700 font-bold text-xl cursor-pointer">✕</button>
+      </div>
+
+      <input type="hidden" id="editQuestionOriginalId" value="" />
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Kelas</label>
+          <select id="fKelas" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+            <option value="1">Kelas 1</option>
+            <option value="2">Kelas 2</option>
+            <option value="3">Kelas 3</option>
+            <option value="4">Kelas 4</option>
+            <option value="5">Kelas 5</option>
+            <option value="6">Kelas 6</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Mata Pelajaran</label>
+          <select id="fMapel" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+            <option value="Matematika">Matematika</option>
+            <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+            <option value="IPAS">IPAS</option>
+            <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
+            <option value="Bahasa Inggris">Bahasa Inggris</option>
+            <option value="Pendidikan Agama">Pendidikan Agama</option>
+            <option value="Seni Budaya">Seni Budaya</option>
+            <option value="PJOK">PJOK</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Tingkat Kesulitan</label>
+          <select id="fTingkat" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-semibold">
+            <option value="Mudah">Mudah</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Sulit">Sulit</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">ID Soal Unik (Otomatis / Kustom)</label>
+          <input type="text" id="fId" placeholder="Contoh: MTK4-GURU-01" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-mono" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Materi / Topik</label>
+          <input type="text" id="fMateri" placeholder="Contoh: Pecahan Senilai" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-600 mb-1">Pertanyaan</label>
+        <textarea id="fPertanyaan" rows="2" oninput="checkDuplicateWarningLive()" placeholder="Tulis pertanyaan lengkap di sini..." class="w-full p-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+        <div id="duplicateWarningBanner" class="hidden mt-1.5 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold">
+          ⚠️ Peringatan Duplikasi: Pertanyaan ini sangat mirip atau identik dengan soal yang sudah ada di bank soal!
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilihan A (Indeks 0)</label>
+          <input type="text" id="fOpt0" class="w-full p-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilihan B (Indeks 1)</label>
+          <input type="text" id="fOpt1" class="w-full p-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilihan C (Indeks 2)</label>
+          <input type="text" id="fOpt2" class="w-full p-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pilihan D (Indeks 3)</label>
+          <input type="text" id="fOpt3" class="w-full p-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Kunci Jawaban Benar</label>
+          <select id="fJawaban" class="w-full p-2.5 rounded-xl border border-slate-300 text-sm font-bold text-emerald-700">
+            <option value="0">Pilihan A</option>
+            <option value="1">Pilihan B</option>
+            <option value="2">Pilihan C</option>
+            <option value="3">Pilihan D</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1">Pembahasan Singkat</label>
+          <input type="text" id="fPembahasan" placeholder="Penjelasan mengapa jawaban tersebut benar..." class="w-full p-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+        <button onclick="closeModal('teacherFormModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold cursor-pointer">Batal</button>
+        <button onclick="saveTeacherQuestion(false)" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold shadow cursor-pointer">Simpan Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 4: IMPOR JSON GURU
+  ========================================================== -->
+  <div id="importJsonModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-pop">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="font-display font-bold text-xl text-slate-900">Impor Soal via JSON</h3>
+        <button onclick="closeModal('importJsonModal')" class="text-slate-400 hover:text-slate-700 font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <p class="text-xs text-slate-600">Tempelkan array JSON soal sesuai format standar. Sistem otomatis memeriksa ID unik dan mendeteksi kemiripan pertanyaan.</p>
+      <textarea id="jsonImportTextarea" rows="7" class="w-full p-3 rounded-2xl border border-slate-300 font-mono text-xs bg-slate-50" placeholder='[
+  {
+    "id": "MTK4-IMP-01",
+    "kelas": 4,
+    "mapel": "Matematika",
+    "materi": "Perkalian",
+    "tingkat": "Mudah",
+    "pertanyaan": "Berapakah hasil dari 14 x 5?",
+    "pilihan": ["60", "65", "70", "75"],
+    "jawaban": 2,
+    "pembahasan": "14 dikali 5 sama dengan 70."
+  }
+]'></textarea>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('importJsonModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold cursor-pointer">Batal</button>
+        <button onclick="processJsonImport()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow cursor-pointer">Proses Impor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SCRIPT UTAMA: BANK SOAL 300 ITEM + ANTI-PENGULANGAN + GAME
+  ========================================================== -->
+  <script>
+    /*************************************************************************
+     * BAGIAN 1: EFEK SUARA SINTETIS (WEB AUDIO API - TANPA URL EKSTERNAL)
+     *************************************************************************/
+    const AudioEngine = (() => {
+      let ctx = null;
+      function getCtx() {
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) ctx = new AudioCtx();
+        }
+        return ctx;
+      }
+      function playTone(freq, type = 'sine', duration = 0.15, delay = 0) {
+        try {
+          const c = getCtx();
+          if (!c) return;
+          const osc = c.createOscillator();
+          const gain = c.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, c.currentTime + delay);
+          gain.gain.setValueAtTime(0.12, c.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + delay + duration);
+          osc.connect(gain);
+          gain.connect(c.destination);
+          osc.start(c.currentTime + delay);
+          osc.stop(c.currentTime + delay + duration);
+        } catch (e) {}
+      }
+      return {
+        dice: () => { playTone(320, 'triangle', 0.08, 0); playTone(440, 'triangle', 0.08, 0.09); playTone(560, 'triangle', 0.12, 0.18); },
+        correct: () => { playTone(523.25, 'sine', 0.14, 0); playTone(659.25, 'sine', 0.14, 0.12); playTone(783.99, 'sine', 0.25, 0.24); },
+        wrong: () => { playTone(240, 'sawtooth', 0.18, 0); playTone(185, 'sawtooth', 0.28, 0.16); },
+        ladder: () => { [400, 500, 600, 750, 900].forEach((f, i) => playTone(f, 'sine', 0.1, i * 0.07)); },
+        snake: () => { [600, 480, 360, 240, 160].forEach((f, i) => playTone(f, 'sawtooth', 0.1, i * 0.08)); },
+        win: () => { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => playTone(f, 'triangle', 0.16, i * 0.11)); }
+      };
+    })();
+
+    /*************************************************************************
+     * BAGIAN 2: DATABASE 300 SOAL ASLI TERKURASI (50 PER KELAS 1 - 6 SD)
+     * Format kompak yang langsung di-hydrate menjadi objek lengkap unik.
+     *************************************************************************/
+    const RAW_CURATED_DATA = {
+      // =====================================================================
+      // KELAS 1 SD (50 SOAL ASLI)
+      // =====================================================================
+      1: [
+        // Matematika (7)
+        ["MTK1-001","Matematika","Bilangan Cacah","Mudah","Berapakah hasil dari 4 + 3?",["6","7","8","9"],1,"4 ditambah 3 sama dengan 7."],
+        ["MTK1-002","Matematika","Pengurangan","Mudah","Ibu membeli 9 jeruk lalu dimakan 4 jeruk. Sisa jeruk Ibu adalah...",["4","5","6","3"],1,"9 dikurangi 4 sama dengan 5."],
+        ["MTK1-003","Matematika","Urutan Bilangan","Mudah","Bilangan yang tepat setelah angka 14 adalah...",["13","15","16","12"],1,"Urutan setelah 14 adalah 15."],
+        ["MTK1-004","Matematika","Bangun Datar","Mudah","Benda di kelas yang berbentuk segi empat adalah...",["Bola basket","Papan tulis","Roda sepeda","Topi ulang tahun"],1,"Papan tulis memiliki 4 sisi dan berbentuk persegi panjang (segi empat)."],
+        ["MTK1-005","Matematika","Penjumlahan","Sedang","Di kolam ada 8 ikan mas dan 6 ikan lele. Jumlah seluruh ikan adalah...",["12","13","14","15"],2,"8 ditambah 6 sama dengan 14."],
+        ["MTK1-006","Matematika","Pengukuran Waktu","Sedang","Hari setelah hari Rabu adalah hari...",["Selasa","Kamis","Jumat","Senin"],1,"Urutan hari: Senin, Selasa, Rabu, Kamis."],
+        ["MTK1-007","Matematika","Nilai Tempat","Sulit","Angka 1 pada bilangan 18 menempati nilai tempat...",["Satuan","Puluhan","Ratusan","Ribuan"],1,"Pada bilangan 18, angka 1 bernilai 10 (puluhan) dan 8 bernilai satuan."],
+        // Bahasa Indonesia (7)
+        ["BIN1-001","Bahasa Indonesia","Huruf Vokal","Mudah","Huruf vokal pada kata 'BOLA' adalah...",["B dan L","O dan A","B dan O","L dan A"],1,"Huruf vokal terdiri dari a, i, u, e, o. Pada kata BOLA terdapat O dan A."],
+        ["BIN1-002","Bahasa Indonesia","Suku Kata","Mudah","Kata 'SE-KO-LAH' terdiri dari berapa suku kata?",["2","3","4","5"],1,"Pemenggalan kata se-ko-lah memiliki 3 suku kata."],
+        ["BIN1-003","Bahasa Indonesia","Ungkapan Santun","Mudah","Ketika diberi hadiah oleh teman, kita sebaiknya mengucapkan...",["Maaf","Tolong","Terima kasih","Permisi"],2,"Ucapan terima kasih menunjukkan rasa syukur dan sopan santun."],
+        ["BIN1-004","Bahasa Indonesia","Kosakata Benda","Mudah","Alat yang digunakan untuk menghapus tulisan pensil adalah...",["Penggaris","Penghapus","Rautan","Spidol"],1,"Penghapus karet digunakan untuk membersihkan goresan pensil."],
+        ["BIN1-005","Bahasa Indonesia","Kalimat Tanya","Sedang","Kata tanya untuk menanyakan nama seseorang adalah...",["Di mana","Siapa","Kapan","Berapa"],1,"Kata tanya 'Siapa' digunakan untuk menanyakan orang."],
+        ["BIN1-006","Bahasa Indonesia","Membaca Pemahaman","Sedang","'Rani rajin menggosok gigi sebelum tidur.' Kebiasaan Rani membuat giginya...",["Sakit","Sehat dan bersih","Berlubang","Kuning"],1,"Menggosok gigi menjaga kesehatan dan kebersihan gigi."],
+        ["BIN1-007","Bahasa Indonesia","Tanda Baca","Sulit","Kalimat 'Di mana rumahmu' seharusnya diakhiri tanda baca...",["Tanda seru (!)","Tanda tanya (?)","Tanda titik (.)","Tanda koma (,)"],1,"Kalimat pertanyaan selalu diakhiri dengan tanda tanya (?)."],
+        // IPAS (6)
+        ["IPAS1-001","IPAS","Pancaindra","Mudah","Bagian tubuh yang digunakan untuk melihat pemandangan adalah...",["Telinga","Hidung","Mata","Lidah"],2,"Mata adalah indra penglihatan."],
+        ["IPAS1-002","IPAS","Kebersihan Diri","Mudah","Sebelum makan kita harus mencuci tangan menggunakan air dan...",["Pasir","Sabun","Minyak","Tinta"],1,"Sabun membunuh kuman yang menempel di tangan."],
+        ["IPAS1-003","IPAS","Hewan di Sekitar","Mudah","Hewan yang berkokok di pagi hari adalah...",["Kucing","Ayam jantan","Bebek","Kambing"],1,"Ayam jantan memiliki ciri khas berkokok saat pagi hari."],
+        ["IPAS1-004","IPAS","Tumbuhan","Sedang","Bagian tumbuhan yang berada di dalam tanah untuk menyerap air adalah...",["Daun","Bunga","Akar","Buah"],2,"Akar berfungsi menyerap air dan zat hara dari dalam tanah."],
+        ["IPAS1-005","IPAS","Benda Langit","Sedang","Benda langit yang tampak bersinar terang pada siang hari adalah...",["Bulan","Bintang","Matahari","Komet"],2,"Matahari menyinari bumi pada waktu siang hari."],
+        ["IPAS1-006","IPAS","Merawat Lingkungan","Sulit","Membuang sampah sembarangan ke sungai dapat menyebabkan bencana...",["Kekeringan","Banjir","Gempa bumi","Gunung meletus"],1,"Sampah menyumbat aliran sungai sehingga air meluap menjadi banjir."],
+        // Pendidikan Pancasila (6)
+        ["PPKN1-001","Pendidikan Pancasila","Lambang Negara","Mudah","Lambang negara Indonesia adalah...",["Harimau Sumatra","Garuda Pancasila","Komodo","Elang Jawa"],1,"Garuda Pancasila adalah lambang negara Republik Indonesia."],
+        ["PPKN1-002","Pendidikan Pancasila","Sila Pertama","Mudah","Simbol sila pertama Pancasila adalah...",["Rantai","Bintang","Pohon Beringin","Padi dan Kapas"],1,"Sila Ketuhanan Yang Maha Esa dilambangkan dengan Bintang emas."],
+        ["PPKN1-003","Pendidikan Pancasila","Aturan di Rumah","Mudah","Sebelum berangkat ke sekolah, sebaiknya kita berpamitan kepada...",["Tetangga","Orang tua","Adik bayi","Pedagang"],1,"Berpamitan kepada orang tua adalah bentuk hormat dan patuh."],
+        ["PPKN1-004","Pendidikan Pancasila","Bendera Negara","Sedang","Warna bendera negara Indonesia adalah...",["Putih Merah","Merah Putih","Merah Biru","Putih Kuning"],1,"Sang Saka Merah Putih adalah bendera negara Indonesia."],
+        ["PPKN1-005","Pendidikan Pancasila","Kerja Sama","Sedang","Membersihkan ruang kelas bersama teman membuat pekerjaan menjadi...",["Lebih berat","Cepat selesai","Membosankan","Semakin kotor"],1,"Gotong royong meringankan dan mempercepat pekerjaan."],
+        ["PPKN1-006","Pendidikan Pancasila","Sila Ketiga","Sulit","Bunyi sila ketiga Pancasila adalah...",["Kemanusiaan yang adil dan beradab","Persatuan Indonesia","Keadilan sosial bagi seluruh rakyat Indonesia","Ketuhanan Yang Maha Esa"],1,"Sila ke-3 berbunyi Persatuan Indonesia."],
+        // Bahasa Inggris (6)
+        ["ING1-001","Bahasa Inggris","Numbers","Mudah","Bahasa Inggris dari angka '5' adalah...",["Four","Five","Six","Seven"],1,"1=One, 2=Two, 3=Three, 4=Four, 5=Five."],
+        ["ING1-002","Bahasa Inggris","Colors","Mudah","Warna 'Merah' dalam bahasa Inggris adalah...",["Blue","Green","Red","Yellow"],2,"Red artinya merah, Blue biru, Green hijau, Yellow kuning."],
+        ["ING1-003","Bahasa Inggris","Greetings","Mudah","Ucapan 'Selamat pagi' dalam bahasa Inggris adalah...",["Good night","Good morning","Good bye","Good evening"],1,"Good morning digunakan untuk menyapa di pagi hari."],
+        ["ING1-004","Bahasa Inggris","Animals","Sedang","Kata 'Cat' dalam bahasa Indonesia berarti...",["Anjing","Kucing","Burung","Ikan"],1,"Cat berarti kucing."],
+        ["ING1-005","Bahasa Inggris","School Objects","Sedang","Buku dalam bahasa Inggris disebut...",["Pen","Book","Bag","Ruler"],1,"Book berarti buku."],
+        ["ING1-006","Bahasa Inggris","Family","Sulit","Ibu dalam bahasa Inggris adalah...",["Father","Mother","Sister","Brother"],1,"Mother berarti Ibu, sedangkan Father berarti Ayah."],
+        // Pendidikan Agama (6)
+        ["AGM1-001","Pendidikan Agama","Akhlak Terpuji","Mudah","Sebelum memulai belajar di kelas, kita sebaiknya...",["Bermain dulu","Berdoa kepada Tuhan","Tidur sebentar","Berteriak"],1,"Berdoa memohon kelancaran dan keberkahan ilmu."],
+        ["AGM1-002","Pendidikan Agama","Kejujuran","Mudah","Anak yang berkata sesuai kenyataan dan tidak berbohong disebut anak yang...",["Malas","Jujur","Sombong","Penakut"],1,"Jujur adalah perilaku terpuji yang disayangi Tuhan dan sesama."],
+        ["AGM1-003","Pendidikan Agama","Kasih Sayang","Mudah","Terhadap teman yang berbeda agama, sikap kita harus saling...",["Mengejek","Menghormati","Memusuhi","Menjauhi"],1,"Menghormati perbedaan menciptakan kerukunan."],
+        ["AGM1-004","Pendidikan Agama","Kebersihan","Sedang","Kebersihan adalah sebagian dari...",["Permainan","Iman","Kekayaan","Kemalasan"],1,"Menjaga kebersihan merupakan wujud keimanan."],
+        ["AGM1-005","Pendidikan Agama","Berbakti","Sedang","Ketika orang tua menasihati kita, sikap yang baik adalah...",["Membantah","Mendengarkan dengan patuh","Pergi meninggalkan","Marah"],1,"Mendengarkan nasihat orang tua adalah tanda anak berbakti."],
+        ["AGM1-006","Pendidikan Agama","Syukur","Sulit","Ketika mendapatkan nikmat dan rezeki dari Tuhan, kita harus...",["Mengeluh","Bersyukur","Pamer","Sombong"],1,"Bersyukur berarti berterima kasih atas karunia Tuhan."],
+        // Seni Budaya (6)
+        ["SBDP1-001","Seni Budaya","Warna Primer","Mudah","Warna daun yang segar pada umumnya adalah...",["Ungu","Hijau","Hitam","Cokelat"],1,"Daun segar berwarna hijau karena mengandung klorofil."],
+        ["SBDP1-002","Seni Budaya","Lagu Anak","Mudah","Lagu 'Balonku' menceritakan tentang balon yang berjumlah...",["Empat","Lima","Enam","Tujuh"],1,"Lirik lagu: 'Balonku ada lima, rupa-rupa warnanya'."],
+        ["SBDP1-003","Seni Budaya","Alat Gambar","Mudah","Untuk mewarnai gambar di buku gambar, kita dapat menggunakan...",["Cangkul","Krayon","Sendok","Gunting"],1,"Krayon atau pensil warna digunakan untuk mewarnai gambar."],
+        ["SBDP1-004","Seni Budaya","Gerak Tari","Sedang","Gerakan menirukan kupu-kupu terbang dilakukan dengan menggerakkan...",["Kepala","Kedua tangan","Lutut","Dagu"],1,"Kedua tangan direntangkan dan dikepakkan seperti sayap kupu-kupu."],
+        ["SBDP1-005","Seni Budaya","Bunyi Alam","Sedang","Suara 'tik-tik-tik' di atas genting adalah bunyi alam dari...",["Angin","Air hujan","Petir","Ombak"],1,"Lagu Tik-Tik Bunyi Hujan menggambarkan suara rintik hujan."],
+        ["SBDP1-006","Seni Budaya","Karya Kerajinan","Sulit","Kolase adalah karya seni menempelkan potongan bahan seperti...",["Air dan asap","Biji-bijian atau kertas warna","Suara musik","Bayangan lampu"],1,"Kolase dibuat dengan menempelkan biji-bijian, daun kering, atau kertas."],
+        // PJOK (6)
+        ["PJOK1-001","PJOK","Pemanasan","Mudah","Sebelum berolahraga, kita harus melakukan gerakan...",["Pendinginan","Pemanasan","Tidur","Makan kenyang"],1,"Pemanasan melemaskan otot agar tidak cedera saat olahraga."],
+        ["PJOK1-002","PJOK","Gerak Lokomotor","Mudah","Gerakan berpindah tempat dengan melangkahkan kaki secara cepat disebut...",["Duduk","Berlari","Membungkuk","Mengangguk"],1,"Berlari adalah gerak lokomotor berpindah tempat dengan cepat."],
+        ["PJOK1-003","PJOK","Permainan Bola","Mudah","Permainan sepak bola dimainkan dengan cara menendang bola menggunakan...",["Tangan","Kaki","Kepala saja","Siku"],1,"Sepak bola dimainkan terutama menggunakan kaki."],
+        ["PJOK1-004","PJOK","Keseimbangan","Sedang","Sikap berdiri dengan satu kaki melatih...",["Kecepatan","Keseimbangan tubuh","Kekuatan gigi","Pendengaran"],1,"Berdiri satu kaki seperti bangau melatih keseimbangan."],
+        ["PJOK1-005","PJOK","Kesehatan Tubuh","Sedang","Makanan sehat yang mengandung banyak vitamin adalah...",["Permen","Buah dan sayur","Kerupuk","Minuman bersoda"],1,"Buah dan sayur kaya akan vitamin dan serat untuk tubuh."],
+        ["PJOK1-006","PJOK","Kebersihan Pakaian","Sulit","Setelah selesai berolahraga dan berkeringat, sebaiknya kita...",["Langsung tidur","Mengganti pakaian bersih","Memakai jaket tebal","Tidak mandi"],1,"Mengganti pakaian yang basah keringat mencegah penyakit kulit."]
+      ],
+
+      // =====================================================================
+      // KELAS 2 SD (50 SOAL ASLI)
+      // =====================================================================
+      2: [
+        // Matematika (7)
+        ["MTK2-001","Matematika","Penjumlahan","Mudah","Berapakah hasil dari 25 + 14?",["38","39","40","41"],1,"25 + 14 = 39."],
+        ["MTK2-002","Matematika","Pengurangan","Mudah","Hasil dari 48 - 16 adalah...",["30","32","34","22"],1,"48 dikurangi 16 sama dengan 32."],
+        ["MTK2-003","Matematika","Perkalian Dasar","Mudah","Bentuk penjumlahan berulang dari 3 x 4 adalah...",["3 + 3 + 3","4 + 4 + 4","3 + 4","4 + 4 + 4 + 4"],1,"3 x 4 artinya ada 3 kelompok yang masing-masing berisi 4 (4 + 4 + 4)."],
+        ["MTK2-004","Matematika","Satuan Panjang","Sedang","Alat ukur yang tepat untuk mengukur panjang buku tulis adalah...",["Timbangan","Penggaris","Jam dinding","Termometer"],1,"Penggaris menggunakan satuan sentimeter (cm) untuk mengukur benda pendek."],
+        ["MTK2-005","Matematika","Uang","Sedang","Dua lembar uang Rp5.000,00 nilainya sama dengan...",["Rp8.000,00","Rp10.000,00","Rp15.000,00","Rp20.000,00"],1,"5.000 + 5.000 = 10.000."],
+        ["MTK2-006","Matematika","Pembagian Dasar","Sulit","Ibu memiliki 18 kue dan dibagikan sama rata kepada 3 anak. Setiap anak mendapat...",["5 kue","6 kue","7 kue","8 kue"],1,"18 dibagi 3 sama dengan 6."],
+        ["MTK2-007","Matematika","Bangun Ruang","Sulit","Kaleng susu berbentuk bangun ruang...",["Kubus","Tabung","Kerucut","Limas"],1,"Kaleng susu memiliki alas dan tutup berbentuk lingkaran sehingga disebut tabung."],
+        // Bahasa Indonesia (7)
+        ["BIN2-001","Bahasa Indonesia","Huruf Kapital","Mudah","Penulisan nama kota yang benar adalah...",["jember","Jember","JEMBER","jEmber"],1,"Nama geografis atau kota diawali dengan huruf kapital."],
+        ["BIN2-002","Bahasa Indonesia","Sinonim","Mudah","Persamaan kata dari 'senang' adalah...",["Sedih","Gembira","Marah","Takut"],1,"Senang memiliki arti yang sama dengan gembira."],
+        ["BIN2-003","Bahasa Indonesia","Antonim","Mudah","Lawan kata dari 'tinggi' adalah...",["Besar","Pendek","Panjang","Lebar"],1,"Lawan kata tinggi adalah rendah atau pendek."],
+        ["BIN2-004","Bahasa Indonesia","Ungkapan Permintaan Maaf","Sedang","Edo tidak sengaja menyenggol gelas Siti hingga tumpah. Edo harus berkata...",["Tolong ambilkan lap","Maaf Siti, saya tidak sengaja","Terima kasih Siti","Ayo kita main"],1,"Permintaan maaf diucapkan saat melakukan kesalahan."],
+        ["BIN2-005","Bahasa Indonesia","Kata Depan","Sedang","Ayah bekerja ... kantor setiap pagi. Kata depan yang tepat adalah...",["ke","di","dari","pada"],1,"Kata depan 'di' menunjukkan tempat keberadaan."],
+        ["BIN2-006","Bahasa Indonesia","Puisi Anak","Sulit","Membaca puisi harus memperhatikan ekspresi wajah dan...",["Kecepatan lari","Intonasi suara","Warna baju","Tinggi badan"],1,"Intonasi dan ekspresi membuat makna puisi tersampaikan dengan indah."],
+        ["BIN2-007","Bahasa Indonesia","Fabel","Sulit","Cerita dongeng yang tokoh-tokohnya adalah hewan yang berperilaku seperti manusia disebut...",["Legenda","Fabel","Mitos","Biografi"],1,"Fabel adalah cerita hewan, seperti Kancil dan Buaya."],
+        // IPAS (6)
+        ["IPAS2-001","IPAS","Wujud Benda","Mudah","Contoh benda cair yang ada di dapur adalah...",["Piring","Minyak goreng","Sendok","Garam"],1,"Minyak goreng berbentuk cair dan mengikuti bentuk wadahnya."],
+        ["IPAS2-002","IPAS","Perubahan Wujud","Mudah","Es batu yang dibiarkan di ruang terbuka lama-kelamaan akan...",["Membeku","Mencair","Menyublim","Menguap"],1,"Es batu terkena panas akan mencair menjadi air."],
+        ["IPAS2-003","IPAS","Hewan Herbivora","Sedang","Hewan berikut yang memakan rumput dan tumbuhan adalah...",["Harimau","Sapi","Elang","Buaya"],1,"Sapi adalah hewan pemakan tumbuhan (herbivora)."],
+        ["IPAS2-004","IPAS","Manfaat Tumbuhan","Sedang","Tumbuhan menghasilkan gas yang sangat dibutuhkan manusia untuk bernapas, yaitu...",["Karbon dioksida","Oksigen","Nitrogen","Asap"],1,"Tumbuhan menghasilkan oksigen saat berfotosintesis."],
+        ["IPAS2-005","IPAS","Energi Listrik","Sulit","Alat elektronik yang mengubah energi listrik menjadi energi cahaya adalah...",["Kipas angin","Lampu belajar","Setrika","Radio"],1,"Lampu menghasilkan cahaya saat dialiri listrik."],
+        ["IPAS2-006","IPAS","Keselamatan","Sulit","Bermain layang-layang sebaiknya dilakukan di...",["Jalan raya","Tanah lapang","Dekat tiang listrik","Atap rumah"],1,"Tanah lapang aman dari lalu lintas kendaraan dan kabel listrik."],
+        // Pendidikan Pancasila (6)
+        ["PPKN2-001","Pendidikan Pancasila","Sila Kedua","Mudah","Simbol sila kedua Pancasila adalah...",["Bintang","Rantai emas","Kepala Banteng","Pohon Beringin"],1,"Rantai emas melambangkan sila Kemanusiaan yang adil dan beradab."],
+        ["PPKN2-002","Pendidikan Pancasila","Tata Tertib Sekolah","Mudah","Salah satu tata tertib di sekolah adalah...",["Datang terlambat","Memakai seragam rapi","Mencoret dinding","Ribut saat belajar"],1,"Memakai seragam rapi adalah kewajiban siswa di sekolah."],
+        ["PPKN2-003","Pendidikan Pancasila","Keberagaman","Sedang","Indonesia memiliki semboyan Bhinneka Tunggal Ika yang artinya...",["Bersatu kita teguh","Berbeda-beda tetapi tetap satu jua","Maju terus pantang mundur","Rajin pangkal pandai"],1,"Bhinneka Tunggal Ika berarti berbeda-beda namun tetap satu kesatuan."],
+        ["PPKN2-004","Pendidikan Pancasila","Musyawarah","Sedang","Pemilihan ketua kelas sebaiknya dilakukan dengan cara...",["Bertengkar","Musyawarah mufakat","Menang sendiri","Undian koin saja"],1,"Musyawarah sesuai dengan nilai sila keempat Pancasila."],
+        ["PPKN2-005","Pendidikan Pancasila","Sila Kelima","Sulit","Bersikap adil kepada semua teman merupakan pengamalan Pancasila sila ke-...",["Dua","Lima","Satu","Tiga"],1,"Keadilan sosial bagi seluruh rakyat Indonesia adalah sila ke-5."],
+        ["PPKN2-006","Pendidikan Pancasila","Piket Kelas","Sulit","Tujuan dibentuknya jadwal piket kelas adalah agar...",["Siswa pulang malam","Kebersihan kelas terjaga bersama","Guru tidak mengajar","Kelas menjadi ramai"],1,"Piket melatih tanggung jawab dan menjaga kebersihan kelas."],
+        // Bahasa Inggris (6)
+        ["ING2-001","Bahasa Inggris","Fruits","Mudah","Buah 'Pisang' dalam bahasa Inggris adalah...",["Apple","Banana","Orange","Grape"],1,"Banana berarti pisang."],
+        ["ING2-002","Bahasa Inggris","Body Parts","Mudah","Kata 'Hand' dalam bahasa Indonesia berarti...",["Kaki","Tangan","Kepala","Hidung"],1,"Hand berarti tangan."],
+        ["ING2-003","Bahasa Inggris","Numbers 11-20","Sedang","Angka '12' dalam bahasa Inggris adalah...",["Eleven","Twelve","Twenty","Thirteen"],1,"11=Eleven, 12=Twelve, 13=Thirteen."],
+        ["ING2-004","Bahasa Inggris","Days","Sedang","Hari Minggu dalam bahasa Inggris disebut...",["Monday","Sunday","Friday","Saturday"],1,"Sunday adalah hari Minggu."],
+        ["ING2-005","Bahasa Inggris","Animals","Sulit","Hewan 'Gajah' dalam bahasa Inggris adalah...",["Tiger","Elephant","Monkey","Rabbit"],1,"Elephant berarti gajah."],
+        ["ING2-006","Bahasa Inggris","Classroom","Sulit","'Sit down, please' artinya...",["Silakan berdiri","Silakan duduk","Silakan keluar","Silakan makan"],1,"Sit down berarti duduk."],
+        // Pendidikan Agama (6)
+        ["AGM2-001","Pendidikan Agama","Tolong Menolong","Mudah","Jika ada teman yang terjatuh dari sepeda, kita harus segera...",["Menertawakan","Menolongnya","Meninggalkannya","Membiarkannya"],1,"Menolong sesama yang kesusahan adalah perbuatan mulia."],
+        ["AGM2-002","Pendidikan Agama","Kasih Sayang","Mudah","Terhadap hewan peliharaan di rumah, kita wajib...",["Menyiksanya","Memberi makan dan merawatnya","Mengurungnya tanpa air","Memukulnya"],1,"Menyayangi makhluk ciptaan Tuhan adalah kewajiban kita."],
+        ["AGM2-003","Pendidikan Agama","Disiplin Ibadah","Sedang","Beribadah kepada Tuhan harus dilakukan dengan hati yang...",["Terpaksa","Ikhlas","Sombong","Marah"],1,"Keikhlasan membuat ibadah diterima oleh Tuhan."],
+        ["AGM2-004","Pendidikan Agama","Sopan Santun","Sedang","Ketika berjalan melewati orang yang lebih tua, kita sebaiknya...",["Berlari kencang","Membungkuk dan permisi","Berteriak keras","Mendorongnya"],1,"Sikap sopan mencerminkan akhlak yang baik."],
+        ["AGM2-005","Pendidikan Agama","Hemat","Sulit","Tidak berlebih-lebihan dalam menggunakan uang jajan disebut sikap...",["Boros","Hemat","Kikir","Serakah"],1,"Hemat adalah menggunakan sesuatu sesuai kebutuhan."],
+        ["AGM2-006","Pendidikan Agama","Pemaaf","Sulit","Jika teman meminta maaf atas kesalahannya, kita sebaiknya...",["Membalas dendam","Memaafkannya dengan tulus","Memarahinya terus","Tidak mau bicara selamanya"],1,"Sifat pemaaf menjaga persaudaraan tetap rukun."],
+        // Seni Budaya (6)
+        ["SBDP2-001","Seni Budaya","Birama Lagu","Mudah","Lagu kebangsaan Indonesia adalah...",["Garuda Pancasila","Indonesia Raya","Bagimu Negeri","Ibu Kita Kartini"],1,"Indonesia Raya diciptakan oleh W.R. Supratman."],
+        ["SBDP2-002","Seni Budaya","Alat Musik Ritmis","Mudah","Alat musik yang dimainkan dengan cara dipukul adalah...",["Seruling","Gendang","Gitar","Biola"],1,"Gendang dimainkan dengan cara dipukul."],
+        ["SBDP2-003","Seni Budaya","Karya Imajinatif","Sedang","Menggambar berdasarkan khayalan atau pikiran sendiri disebut gambar...",["Fotografi","Imajinatif","Cetakan","Ukiran"],1,"Gambar imajinatif berasal dari daya khayal pembuatnya."],
+        ["SBDP2-004","Seni Budaya","Bahan Alam","Sedang","Kerajinan dari tanah liat dapat dibentuk menjadi...",["Kertas buku","Gerabah atau celengan","Kain baju","Kaca jendela"],1,"Tanah liat bersifat lunak sehingga mudah dibentuk menjadi gerabah."],
+        ["SBDP2-005","Seni Budaya","Pola Lantai","Sulit","Gerakan tari yang dilakukan secara bersama-sama membutuhkan...",["Kekompakan","Keegoisan","Kemarahan","Kelelahan"],1,"Kekompakan membuat tarian kelompok terlihat indah."],
+        ["SBDP2-006","Seni Budaya","Origami","Sulit","Seni melipat kertas yang berasal dari Jepang disebut...",["Kaligrafi","Origami","Mozaik","Relief"],1,"Origami adalah seni melipat kertas menjadi berbagai bentuk."],
+        // PJOK (6)
+        ["PJOK2-001","PJOK","Gerak Non-Lokomotor","Mudah","Gerakan memutar lengan di tempat termasuk gerak...",["Lokomotor","Non-lokomotor","Manipulatif","Melayang"],1,"Gerak non-lokomotor adalah gerakan tanpa berpindah tempat."],
+        ["PJOK2-002","PJOK","Gerak Manipulatif","Mudah","Melempar dan menangkap bola kasti menggunakan...",["Kaki","Tangan","Punggung","Lutut"],1,"Melempar dan menangkap bola dilakukan dengan tangan."],
+        ["PJOK2-003","PJOK","Senam Lantai","Sedang","Alas empuk yang digunakan saat melakukan senam lantai disebut...",["Karpet tipis","Matras","Papan kayu","Kardus"],1,"Matras melindungi tubuh dari benturan lantai."],
+        ["PJOK2-004","PJOK","Kebersihan Lingkungan","Sedang","Genangan air di kaleng bekas harus dikuras agar tidak menjadi sarang...",["Kupu-kupu","Nyamuk demam berdarah","Semut merah","Lebah madu"],1,"Nyamuk Aedes aegypti berkembang biak di genangan air bersih."],
+        ["PJOK2-005","PJOK","Istirahat","Sulit","Istirahat yang paling baik untuk memulihkan tenaga tubuh adalah...",["Menonton TV semalaman","Tidur yang cukup","Bermain gim terus","Begadang"],1,"Tidur cukup memulihkan sel-sel tubuh yang lelah."],
+        ["PJOK2-006","PJOK","Renang","Sulit","Sebelum masuk ke kolam renang, kita sebaiknya membasahi tubuh untuk...",["Menghabiskan air","Menyesuaikan suhu tubuh","Mengotori kolam","Bermain sabun"],1,"Membasahi tubuh mencegah kram akibat perbedaan suhu air."]
+      ],
+
+      // =====================================================================
+      // KELAS 3 SD (50 SOAL ASLI)
+      // =====================================================================
+      3: [
+        // Matematika (7)
+        ["MTK3-001","Matematika","Nilai Tempat Ribuan","Mudah","Nilai angka 4 pada bilangan 4.250 adalah...",["40","400","4.000","4"],2,"Angka 4 berada di posisi ribuan sehingga bernilai 4.000."],
+        ["MTK3-002","Matematika","Penjumlahan Ribuan","Mudah","Hasil dari 1.250 + 2.300 adalah...",["3.450","3.550","3.650","3.500"],1,"1.250 + 2.300 = 3.550."],
+        ["MTK3-003","Matematika","Perkalian","Sedang","Sebuah peternakan memiliki 6 kandang ayam. Tiap kandang berisi 15 ekor ayam. Jumlah semua ayam adalah...",["80 ekor","90 ekor","95 ekor","100 ekor"],1,"6 x 15 = 90 ekor ayam."],
+        ["MTK3-004","Matematika","Pecahan Sederhana","Sedang","Sebuah semangka dipotong menjadi 8 bagian sama besar. Satu potong semangka bernilai pecahan...",["1/4","1/8","8/1","1/2"],1,"1 bagian dari 8 potongan sama besar ditulis 1/8."],
+        ["MTK3-005","Matematika","Satuan Waktu","Sedang","2 jam 30 menit sama dengan berapa menit?",["120 menit","150 menit","180 menit","130 menit"],1,"(2 x 60) + 30 = 120 + 30 = 150 menit."],
+        ["MTK3-006","Matematika","Keliling Bangun Datar","Sulit","Sebuah persegi memiliki panjang sisi 9 cm. Keliling persegi tersebut adalah...",["18 cm","36 cm","81 cm","27 cm"],1,"Keliling persegi = 4 x sisi = 4 x 9 = 36 cm."],
+        ["MTK3-007","Matematika","Satuan Berat","Sulit","Ibu membeli 3 kg tepung terigu. Berat tepung tersebut sama dengan...",["300 gram","3.000 gram","30.000 gram","30 gram"],1,"1 kg = 1.000 gram, maka 3 kg = 3.000 gram."],
+        // Bahasa Indonesia (7)
+        ["BIN3-001","Bahasa Indonesia","Ide Pokok","Mudah","Gagasan utama yang menjadi dasar pengembangan sebuah paragraf disebut...",["Kalimat penjelas","Ide pokok","Judul buku","Daftar isi"],1,"Ide pokok adalah inti pembahasan dalam suatu paragraf."],
+        ["BIN3-002","Bahasa Indonesia","Wawancara","Mudah","Orang yang memberikan informasi saat kegiatan wawancara disebut...",["Pewawancara","Narasumber","Penonton","Penulis"],1,"Narasumber adalah pihak yang diwawancarai untuk dimintai keterangan."],
+        ["BIN3-003","Bahasa Indonesia","Kalimat Efektif","Sedang","'Para siswa-siswa sedang upacara.' Perbaikan kalimat efektifnya adalah...",["Para siswa sedang upacara","Siswa-siswa para upacara","Para-para siswa upacara","Sedang upacara para siswa-siswa"],0,"Kata 'para' sudah bermakna jamak sehingga tidak perlu diulang 'siswa-siswa'."],
+        ["BIN3-004","Bahasa Indonesia","Rambu Lalu Lintas","Sedang","Rambu lalu lintas bergambar huruf 'P' dicoret artinya...",["Dilarang berhenti","Dilarang parkir","Tempat parkir","Putar balik"],1,"Huruf P dicoret berarti dilarang parkir di area tersebut."],
+        ["BIN3-005","Bahasa Indonesia","Perubahan Cuaca","Sedang","Keadaan udara pada suatu tempat tertentu dalam jangka waktu singkat disebut...",["Iklim","Cuaca","Musim","Suhu"],1,"Cuaca dapat berubah dengan cepat dalam hitungan jam."],
+        ["BIN3-006","Bahasa Indonesia","Kata Baku","Sulit","Penulisan kata baku yang tepat di bawah ini adalah...",["Apotik","Apotek","Nafas","Praktek"],1,"Menurut KBBI, bentuk baku yang benar adalah 'Apotek'."],
+        ["BIN3-007","Bahasa Indonesia","Majalah Dinding","Sulit","Informasi singkat yang ditempel di papan pengumuman sekolah bertujuan untuk...",["Menghias tembok","Menyampaikan berita kepada warga sekolah","Menutupi cat rusak","Menambah sampah kertas"],1,"Mading atau papan pengumuman menjadi media informasi sekolah."],
+        // IPAS (6)
+        ["IPAS3-001","IPAS","Ciri Makhluk Hidup","Mudah","Tumbuhan putri malu akan mengatupkan daunnya saat disentuh. Hal ini menunjukkan ciri makhluk hidup yaitu...",["Bernapas","Peka terhadap rangsang","Berkembang biak","Tumbuh besar"],1,"Peka terhadap rangsang (iritabilitas) adalah reaksi terhadap sentuhan atau cahaya."],
+        ["IPAS3-002","IPAS","Metamorfosis","Mudah","Tahapan kepompong (pupa) terjadi pada daur hidup hewan...",["Ayam","Kupu-kupu","Kucing","Kambing"],1,"Daur hidup kupu-kupu: telur -> ulat -> kepompong -> kupu-kupu."],
+        ["IPAS3-003","IPAS","Alat Pernapasan","Sedang","Ikan bernapas di dalam air menggunakan...",["Paru-paru","Insang","Trakea","Kulit"],1,"Insang menyaring oksigen yang terlarut dalam air."],
+        ["IPAS3-004","IPAS","Sumber Energi","Sedang","Sumber energi panas dan cahaya terbesar bagi kehidupan di bumi adalah...",["Batu bara","Matahari","Baterai","Lampu jalan"],1,"Matahari adalah sumber energi utama bagi seluruh makhluk hidup di bumi."],
+        ["IPAS3-005","IPAS","Pelestarian Alam","Sulit","Penanaman kembali hutan yang telah gundul disebut...",["Erosi","Reboisasi","Abrasi","Irigasi"],1,"Reboisasi bertujuan memulihkan kelestarian hutan dan mencegah banjir."],
+        ["IPAS3-006","IPAS","Daur Air","Sulit","Proses penguapan air laut akibat panas matahari disebut...",["Kondensasi","Evaporasi","Presipitasi","Infiltrasi"],1,"Evaporasi adalah proses penguapan air menjadi uap air."],
+        // Pendidikan Pancasila (6)
+        ["PPKN3-001","Pendidikan Pancasila","Hak dan Kewajiban","Mudah","Mendapatkan pengajaran dan ilmu dari guru di sekolah adalah ... siswa.",["Kewajiban","Hak","Hukuman","Tugas berat"],1,"Hak adalah sesuatu yang pantas diterima setelah melaksanakan kewajiban."],
+        ["PPKN3-002","Pendidikan Pancasila","Sila Keempat","Mudah","Lambang sila keempat Pancasila adalah...",["Pohon Beringin","Kepala Banteng","Rantai","Bintang"],1,"Kepala banteng melambangkan musyawarah dan demokrasi."],
+        ["PPKN3-003","Pendidikan Pancasila","Budaya Daerah","Sedang","Tari Reog merupakan kesenian tradisional yang berasal dari provinsi...",["Jawa Barat","Jawa Timur","Bali","Sumatra Utara"],1,"Tari Reog berasal dari Ponorogo, Jawa Timur."],
+        ["PPKN3-004","Pendidikan Pancasila","Toleransi","Sedang","Jika pendapat kita tidak terpilih dalam musyawarah kelas, sikap kita harus...",["Marah dan keluar kelas","Menerima dengan lapang dada","Menyalahkan ketua kelas","Tidak mau ikut kegiatan"],1,"Keputusan musyawarah harus diterima dan dilaksanakan bersama."],
+        ["PPKN3-005","Pendidikan Pancasila","Gotong Royong","Sulit","Istilah gotong royong di daerah Bali dikenal dengan nama...",["Mapalus","Ngayab","Sambatan","Marsiadapari"],1,"Di Bali kegiatan gotong royong adat dikenal dengan istilah Ngayab."],
+        ["PPKN3-006","Pendidikan Pancasila","Identitas Diri","Sulit","Mempelajari tarian dan lagu daerah lain merupakan wujud sikap...",["Sombong budaya","Cinta tanah air dan melestarikan budaya","Meniru budaya asing","Melupakan daerah asal"],1,"Keberagaman budaya daerah adalah kekayaan bangsa Indonesia."],
+        // Bahasa Inggris (6)
+        ["ING3-001","Bahasa Inggris","Food & Drink","Mudah","'I am thirsty. I want to drink...' Kata yang tepat melengkapi kalimat tersebut adalah...",["Bread","Water","Rice","Chicken"],1,"Thirsty artinya haus, sehingga membutuhkan air (water)."],
+        ["ING3-002","Bahasa Inggris","Weather","Mudah","Cuaca 'Hujan' dalam bahasa Inggris adalah...",["Sunny","Rainy","Cloudy","Windy"],1,"Rainy artinya hujan."],
+        ["ING3-003","Bahasa Inggris","Professions","Sedang","Seseorang yang mengajar siswa di sekolah disebut...",["Doctor","Teacher","Farmer","Pilot"],1,"Teacher berarti guru."],
+        ["ING3-004","Bahasa Inggris","Time","Sedang","'It is seven o'clock' artinya sekarang pukul...",["06.00","07.00","08.00","09.00"],1,"Seven o'clock berarti pukul 7 tepat."],
+        ["ING3-005","Bahasa Inggris","Prepositions","Sulit","'The book is on the table.' Kata 'on' artinya...",["Di bawah","Di atas","Di dalam","Di samping"],1,"On berarti di atas permukaan benda."],
+        ["ING3-006","Bahasa Inggris","Hobbies","Sulit","'My hobby is swimming.' Hobi yang dimaksud adalah...",["Membaca","Berenang","Menyanyi","Melukis"],1,"Swimming artinya berenang."],
+        // Pendidikan Agama (6)
+        ["AGM3-001","Pendidikan Agama","Mandiri","Mudah","Menyiapkan buku pelajaran sendiri pada malam hari melatih sikap...",["Manja","Mandiri","Malas","Ceroboh"],1,"Mandiri berarti melakukan tugas sendiri tanpa bergantung pada orang lain."],
+        ["AGM3-002","Pendidikan Agama","Peduli Sesama","Mudah","Menjenguk teman yang sedang sakit dapat membuat hatinya merasa...",["Sedih","Terhibur dan senang","Takut","Marah"],1,"Menjenguk orang sakit mempererat tali persaudaraan."],
+        ["AGM3-003","Pendidikan Agama","Tanggung Jawab","Sedang","Amanah artinya dapat dipercaya. Contoh sikap amanah adalah...",["Menyampaikan pesan guru kepada orang tua","Menyembunyikan surat panggilan","Mengambil barang teman","Berbohong saat ditanya"],0,"Menyampaikan pesan dengan jujur adalah wujud sikap amanah."],
+        ["AGM3-004","Pendidikan Agama","Rasa Syukur","Sedang","Cara mensyukuri nikmat kesehatan tubuh adalah dengan...",["Makan sembarangan","Menjaga kesehatan dan rajin beribadah","Malas bergerak","Begadang setiap hari"],1,"Merawat tubuh adalah bentuk syukur kepada Pencipta."],
+        ["AGM3-005","Pendidikan Agama","Sabar","Sulit","Ketika menghadapi kesulitan saat belajar matematika, sikap yang tepat adalah...",["Menyerah","Sabar dan terus berlatih","Menyobek buku","Menyontek teman"],1,"Kesabaran dan ketekunan adalah kunci keberhasilan."],
+        ["AGM3-006","Pendidikan Agama","Kerukunan","Sulit","Hidup rukun di lingkungan masyarakat menciptakan suasana yang...",["Kacau","Damai dan tenteram","Menakutkan","Penuh curiga"],1,"Kerukunan membawa kedamaian bagi seluruh warga."],
+        // Seni Budaya (6)
+        ["SBDP3-001","Seni Budaya","Unsur Seni Rupa","Mudah","Unsur paling dasar dalam seni rupa adalah...",["Lagu","Titik","Gerakan","Dialog"],1,"Titik adalah unsur terkecil yang membentuk garis dan bidang."],
+        ["SBDP3-002","Seni Budaya","Motif Hias","Mudah","Motif batik yang meniru bentuk daun dan bunga disebut motif...",["Geometris","Tumbuhan (Flora)","Hewan (Fauna)","Abstrak"],1,"Motif flora terinspirasi dari keindahan tumbuhan."],
+        ["SBDP3-003","Seni Budaya","Tempo Lagu","Sedang","Cepat atau lambatnya ketukan dalam sebuah lagu disebut...",["Nada","Tempo","Lirik","Timbre"],1,"Tempo mengatur kecepatan lagu saat dinyanyikan."],
+        ["SBDP3-004","Seni Budaya","Alat Musik Melodis","Sedang","Alat musik yang memiliki nada dan dapat memainkan melodi lagu adalah...",["Drum","Pianika","Tamborin","Segitiga (Triangle)"],1,"Pianika memiliki tuts nada do-re-mi sehingga termasuk alat musik melodis."],
+        ["SBDP3-005","Seni Budaya","Teknik Potong Sambung","Sulit","Membuat karya seni dengan cara memotong kertas lalu menempelkannya membentuk gambar baru disebut teknik...",["Pahat","Montase / Aplikasi","Tenun","Cor"],1,"Teknik potong dan tempel menghasilkan karya kolase, montase, atau aplikasi."],
+        ["SBDP3-006","Seni Budaya","Dinamika Tari","Sulit","Gerakan tari yang dilakukan dengan tenaga kuat biasanya menggambarkan watak yang...",["Lemah lembut","Gagah dan bersemangat","Sedih","Mengantuk"],1,"Tenaga kuat memberikan kesan gagah dan tegas pada tarian."],
+        // PJOK (6)
+        ["PJOK3-001","PJOK","Kebugaran Jasmani","Mudah","Latihan lari pelan secara teratur disebut...",["Sprint","Jogging","Lompat jauh","Push up"],1,"Jogging melatih daya tahan jantung dan paru-paru."],
+        ["PJOK3-002","PJOK","Kekuatan Otot","Mudah","Gerakan mendorong lantai dengan kedua tangan dalam posisi telungkup disebut...",["Sit up","Push up","Back up","Squat jump"],1,"Push up melatih kekuatan otot lengan dan bahu."],
+        ["PJOK3-003","PJOK","Gizi Seimbang","Sedang","Zat gizi yang berfungsi sebagai sumber tenaga utama tubuh adalah...",["Vitamin","Karbohidrat","Mineral","Air"],1,"Karbohidrat (nasi, roti, jagung) menghasilkan energi untuk beraktivitas."],
+        ["PJOK3-004","PJOK","Permainan Tradisional","Sedang","Permainan tradisional egrang melatih keterampilan...",["Menendang bola","Keseimbangan dan koordinasi","Berenang cepat","Melempar lembing"],1,"Berjalan di atas bambu egrang membutuhkan keseimbangan tinggi."],
+        ["PJOK3-005","PJOK","P3K Ringan","Sulit","Tindakan pertama saat mengalami luka gores ringan akibat terjatuh adalah...",["Ditutup tanah","Dibersihkan dengan air bersih dan antiseptik","Dibiarkan kotor","Diolesi tinta"],1,"Membersihkan luka mencegah infeksi kuman."],
+        ["PJOK3-006","PJOK","Waktu Luang","Sulit","Mengisi waktu luang di akhir pekan yang bermanfaat bagi kesehatan adalah...",["Tidur seharian","Bersepeda bersama keluarga","Bermain gawai 8 jam","Makan berlebihan"],1,"Bersepeda menjaga kebugaran fisik dan kebersamaan."]
+      ],
+
+      // =====================================================================
+      // KELAS 4 SD (50 SOAL ASLI)
+      // =====================================================================
+      4: [
+        // Matematika (7)
+        ["MTK4-001","Matematika","Faktor Bilangan","Mudah","Faktor dari bilangan 12 adalah...",["1, 2, 3, 4, 6, 12","1, 2, 5, 12","2, 4, 8, 12","1, 3, 5, 12"],0,"Bilangan yang habis membagi 12 adalah 1, 2, 3, 4, 6, dan 12."],
+        ["MTK4-002","Matematika","Pecahan Senilai","Mudah","Pecahan yang senilai dengan 2/3 adalah...",["4/5","4/6","3/4","6/8"],1,"Pembilang dan penyebut dikali 2: (2x2)/(3x2) = 4/6."],
+        ["MTK4-003","Matematika","Luas Persegi Panjang","Sedang","Sebuah taman berbentuk persegi panjang dengan panjang 12 m dan lebar 8 m. Luas taman tersebut adalah...",["40 m²","96 m²","20 m²","86 m²"],1,"Luas = panjang x lebar = 12 x 8 = 96 m²."],
+        ["MTK4-004","Matematika","Bilangan Prima","Sedang","Bilangan prima yang terletak di antara 10 dan 20 adalah...",["11, 13, 17, 19","11, 13, 15, 17","12, 14, 16, 18","11, 15, 17, 19"],0,"15 bukan bilangan prima karena habis dibagi 3 dan 5."],
+        ["MTK4-005","Matematika","Sudut","Sedang","Besar sudut siku-siku adalah...",["45 derajat","90 derajat","180 derajat","360 derajat"],1,"Sudut siku-siku besarnya tepat 90°."],
+        ["MTK4-006","Matematika","KPK","Sulit","Kelipatan Persekutuan Terkecil (KPK) dari 6 dan 8 adalah...",["12","24","48","16"],1,"Kelipatan 6: 6,12,18,24. Kelipatan 8: 8,16,24. KPK = 24."],
+        ["MTK4-007","Matematika","Pecahan Desimal","Sulit","Bentuk pecahan desimal dari 3/4 adalah...",["0,34","0,75","0,25","0,50"],1,"3 dibagi 4 sama dengan 0,75."],
+        // Bahasa Indonesia (7)
+        ["BIN4-001","Bahasa Indonesia","Kalimat Transitif","Mudah","Kalimat yang memerlukan objek disebut kalimat...",["Intransitif","Transitif","Tanya","Perintah"],1,"Kalimat transitif berpola S-P-O, contoh: Adik membaca buku."],
+        ["BIN4-002","Bahasa Indonesia","Awalan Me-","Mudah","Kata dasar 'sapu' jika diberi awalan 'me-' menjadi...",["Mesapu","Menyapu","Mensapu","Mengsapu"],1,"Huruf 's' luluh menjadi 'ny' saat bertemu awalan me-."],
+        ["BIN4-003","Bahasa Indonesia","Majas Personifikasi","Sedang","'Angin malam berbisik lembut di telingaku.' Kalimat tersebut menggunakan majas...",["Hiperbola","Personifikasi","Metafora","Asosiasi"],1,"Personifikasi mengumpamakan benda mati seolah hidup seperti manusia."],
+        ["BIN4-004","Bahasa Indonesia","Paragraf Deduktif","Sedang","Paragraf yang kalimat utamanya terletak di awal paragraf disebut paragraf...",["Induktif","Deduktif","Campuran","Naratif"],1,"Deduktif = di depan (awal paragraf)."],
+        ["BIN4-005","Bahasa Indonesia","Kamus (KBBI)","Sedang","Urutan kata dalam Kamus Besar Bahasa Indonesia disusun berdasarkan...",["Panjang kata","Abjad (alfabetis)","Jumlah huruf vokal","Tahun pembuatan"],1,"KBBI disusun secara alfabetis dari A hingga Z."],
+        ["BIN4-006","Bahasa Indonesia","Teks Petunjuk","Sulit","Bahasa yang digunakan dalam teks petunjuk penggunaan alat harus...",["Berbelit-belit","Singkat, jelas, dan berurutan","Puitis dan kiasan","Sangat panjang"],1,"Teks petunjuk memandu pengguna melakukan langkah secara tepat."],
+        ["BIN4-007","Bahasa Indonesia","Konjungsi","Sulit","'Budi ingin bermain bola, ... hujan turun sangat deras.' Kata hubung yang tepat adalah...",["dan","tetapi","atau","sehingga"],1,"Kata hubung 'tetapi' menyatakan pertentangan."],
+        // IPAS (6)
+        ["IPAS4-001","IPAS","Fotosintesis","Mudah","Proses pembuatan makanan pada tumbuhan hijau dengan bantuan cahaya matahari disebut...",["Respirasi","Fotosintesis","Penyerbukan","Pencernaan"],1,"Fotosintesis berlangsung terutama di daun yang mengandung klorofil."],
+        ["IPAS4-002","IPAS","Gaya dan Gerak","Mudah","Buah kelapa yang jatuh dari pohonnya menuju ke tanah dipengaruhi oleh gaya...",["Magnet","Gravitasi bumi","Gesek","Pegas"],1,"Gaya gravitasi menarik benda menuju pusat bumi."],
+        ["IPAS4-003","IPAS","Sifat Cahaya","Sedang","Pensil yang dimasukkan ke dalam gelas berisi air bening tampak patah. Hal ini membuktikan sifat cahaya dapat...",["Dipantulkan","Dibiaskan","Diuraikan","Menembus benda bening"],1,"Pembiasan cahaya terjadi karena cahaya melewati dua medium berbeda kerapatan."],
+        ["IPAS4-004","IPAS","Magnet","Sedang","Benda di bawah ini yang dapat ditarik kuat oleh magnet adalah...",["Penghapus karet","Paku besi","Penggaris plastik","Pensil kayu"],1,"Besi, baja, nikel, dan kobalt termasuk benda feromagnetik."],
+        ["IPAS4-005","IPAS","Sumber Daya Alam","Sulit","Sumber daya alam yang tidak dapat diperbarui karena proses pembentukannya memakan waktu jutaan tahun adalah...",["Air dan udara","Minyak bumi dan batu bara","Hutan dan hewan","Sinar matahari"],1,"Bahan bakar fosil jumlahnya terbatas dan tidak dapat diperbarui dalam waktu singkat."],
+        ["IPAS4-006","IPAS","Keragaman Hayati","Sulit","Taman Nasional Meru Betiri yang melindungi penyu dan banteng terletak di kabupaten...",["Malang","Jember dan Banyuwangi","Surabaya","Kediri"],1,"Taman Nasional Meru Betiri berada di wilayah Jember dan Banyuwangi, Jawa Timur."],
+        // Pendidikan Pancasila (6)
+        ["PPKN4-001","Pendidikan Pancasila","Konstitusi","Mudah","Dasar negara Republik Indonesia adalah...",["UUD 1945","Pancasila","Peraturan Pemerintah","Keputusan Presiden"],1,"Pancasila adalah dasar negara dan pandangan hidup bangsa."],
+        ["PPKN4-002","Pendidikan Pancasila","Pemerintahan Daerah","Mudah","Pemimpin wilayah administratif tingkat Kabupaten disebut...",["Gubernur","Bupati","Camat","Lurah"],1,"Kabupaten dipimpin oleh Bupati, sedangkan Kota dipimpin oleh Walikota."],
+        ["PPKN4-003","Pendidikan Pancasila","Norma Masyarakat","Sedang","Aturan yang bersumber dari hati nurani manusia tentang baik dan buruk disebut norma...",["Hukum","Kesusilaan","Kesopanan","Agama"],1,"Norma kesusilaan berasal dari bisikan hati nurani."],
+        ["PPKN4-004","Pendidikan Pancasila","Rumah Adat","Sedang","Rumah adat Joglo berasal dari daerah...",["Sumatra Barat","Jawa Tengah dan Jawa Timur","Kalimantan Timur","Papua"],1,"Joglo adalah rumah tradisional masyarakat Jawa."],
+        ["PPKN4-005","Pendidikan Pancasila","Perumusan Pancasila","Sulit","Hari lahir Pancasila diperingati setiap tanggal...",["17 Agustus","1 Juni","28 Oktober","10 November"],1,"Pada 1 Juni 1945 Ir. Soekarno menyampaikan pidato tentang dasar negara Pancasila."],
+        ["PPKN4-006","Pendidikan Pancasila","Persatuan","Sulit","Sikap mengutamakan kepentingan bersama di atas kepentingan pribadi merupakan wujud nilai...",["Individualisme","Nasionalisme dan persatuan","Egoisme","Materialisme"],1,"Kepentingan bangsa harus diutamakan demi keutuhan NKRI."],
+        // Bahasa Inggris (6)
+        ["ING4-001","Bahasa Inggris","Rooms in House","Mudah","Tempat untuk memasak makanan di rumah disebut...",["Bedroom","Kitchen","Bathroom","Garage"],1,"Kitchen artinya dapur."],
+        ["ING4-002","Bahasa Inggris","Numbers 20-100","Mudah","Bahasa Inggris dari angka '50' adalah...",["Fifteen","Fifty","Five","Five hundred"],1,"50 = Fifty, sedangkan 15 = Fifteen."],
+        ["ING4-003","Bahasa Inggris","Daily Activities","Sedang","'I brush my teeth every morning.' Arti kata 'brush my teeth' adalah...",["Menyisir rambut","Menggosok gigi","Mencuci muka","Memakai sepatu"],1,"Brush my teeth berarti menggosok gigi."],
+        ["ING4-004","Bahasa Inggris","Transportation","Sedang","Kendaraan umum yang berjalan di atas rel adalah...",["Bus","Train","Ship","Airplane"],1,"Train adalah kereta api."],
+        ["ING4-005","Bahasa Inggris","Present Continuous","Sulit","'She is ... a book in the library.' Kata kerja yang tepat adalah...",["read","reading","reads","to read"],1,"Pola Present Continuous (is/am/are + V-ing) menggunakan 'reading'."],
+        ["ING4-006","Bahasa Inggris","Directions","Sulit","'Turn left' dalam bahasa Indonesia berarti...",["Belok kanan","Belok kiri","Jalan lurus","Putar balik"],1,"Left = kiri, Right = kanan."],
+        // Pendidikan Agama (6)
+        ["AGM4-001","Pendidikan Agama","Sifat Terpuji","Mudah","Menghormati guru di sekolah merupakan wujud hormat kepada...",["Teman sebaya","Orang tua kedua di sekolah","Adik kelas","Penjaga toko"],1,"Guru mendidik kita di sekolah layaknya orang tua."],
+        ["AGM4-002","Pendidikan Agama","Kepedulian Sosial","Mudah","Membantu korban bencana alam dapat dilakukan dengan menyumbangkan...",["Sampah plastik","Pakaian layak pakai dan makanan","Batu kerikil","Mainan rusak"],1,"Bantuan yang bermanfaat meringankan beban korban bencana."],
+        ["AGM4-003","Pendidikan Agama","Silaturahmi","Sedang","Berkunjung ke rumah kerabat atau tetangga untuk mempererat persaudaraan disebut...",["Pertengkaran","Silaturahmi","Persaingan","Perdebatan"],1,"Silaturahmi menumbuhkan kasih sayang antarsesama."],
+        ["AGM4-004","Pendidikan Agama","Larangan Mencuri","Sedang","Mengambil barang milik orang lain tanpa izin merupakan perbuatan...",["Terpuji","Tercela dan berdosa","Bijaksana","Dermawan"],1,"Mencuri merugikan orang lain dan dilarang oleh agama maupun hukum."],
+        ["AGM4-005","Pendidikan Agama","Toleransi Umat","Sulit","Ketika teman sedang menjalankan ibadahnya, sikap kita sebaiknya...",["Membuat kegaduhan","Menjaga ketenangan dan menghormatinya","Mengganggunya","Menertawakannya"],1,"Menjaga ketenangan saat orang lain beribadah adalah bentuk toleransi."],
+        ["AGM4-006","Pendidikan Agama","Amanah Waktu","Sulit","Memanfaatkan waktu dengan kegiatan bermanfaat merupakan tanda orang yang...",["Merugi","Beruntung dan disiplin","Pemalas","Lalai"],1,"Waktu yang berlalu tidak dapat kembali sehingga harus dimanfaatkan sebaik mungkin."],
+        // Seni Budaya (6)
+        ["SBDP4-001","Seni Budaya","Gambar Tiga Dimensi","Mudah","Benda yang memiliki panjang, lebar, dan tinggi sehingga tampak memiliki ruang disebut benda...",["Satu dimensi","Tiga dimensi","Dua dimensi","Tanpa dimensi"],1,"Contoh benda tiga dimensi adalah kendi, patung, dan kubus."],
+        ["SBDP4-002","Seni Budaya","Tinggi Rendah Nada","Mudah","Urutan nada yang disusun secara berjenjang disebut...",["Tempo","Tangga nada","Birama","Harmoni"],1,"Tangga nada terdiri dari do, re, mi, fa, sol, la, si, do."],
+        ["SBDP4-003","Seni Budaya","Tari Tradisional","Sedang","Tari Saman yang terkenal dengan gerakan tangan cepat dan kompak berasal dari...",["Jawa Barat","Aceh","Sulawesi Selatan","Papua"],1,"Tari Saman berasal dari suku Gayo, Aceh."],
+        ["SBDP4-004","Seni Budaya","Daur Ulang Kreatif","Sedang","Botol plastik bekas dapat dimanfaatkan menjadi karya kerajinan seperti...",["Makanan ringan","Pot tanaman hias","Kertas tulis","Kain tenun"],1,"Botol plastik dapat dipotong dan dihias menjadi pot bunga."],
+        ["SBDP4-005","Seni Budaya","Perspektif Gambar","Sulit","Dalam menggambar pemandangan, benda yang letaknya jauh digambar terlihat...",["Lebih besar","Lebih kecil","Sama besarnya","Menghilang"],1,"Prinsip perspektif membuat objek jauh tampak mengecil."],
+        ["SBDP4-006","Seni Budaya","Alat Musik Tiup","Sulit","Alat musik tradisional dari Jawa Barat yang terbuat dari bambu dan dimainkan dengan digoyangkan adalah...",["Sasando","Angklung","Gamelan","Tifa"],1,"Angklung dimainkan dengan cara digetarkan atau digoyangkan."],
+        // PJOK (6)
+        ["PJOK4-001","PJOK","Atletik","Mudah","Olahraga jalan cepat, lari, lompat, dan lempar tergabung dalam cabang...",["Senam","Atletik","Akuatik","Bela diri"],1,"Atletik disebut sebagai ibu dari segala cabang olahraga."],
+        ["PJOK4-002","PJOK","Bola Voli","Mudah","Jumlah pemain inti dalam satu regu permainan bola voli adalah...",["5 orang","6 orang","11 orang","9 orang"],1,"Setiap regu bola voli terdiri dari 6 pemain di lapangan."],
+        ["PJOK4-003","PJOK","Pencak Silat","Sedang","Seni bela diri asli yang berasal dari budaya bangsa Indonesia adalah...",["Karate","Pencak silat","Taekwondo","Judo"],1,"Pencak silat adalah warisan budaya bela diri Nusantara."],
+        ["PJOK4-004","PJOK","Cedera Olahraga","Sedang","Saat pergelangan kaki terkilir (keseleo), pertolongan pertama yang tepat adalah mengompresnya dengan...",["Air panas mendidih","Es batu (air dingin)","Minyak goreng panas","Pasir hangat"],1,"Kompres dingin mengurangi pembengkakan dan rasa nyeri pada cedera baru."],
+        ["PJOK4-005","PJOK","Daya Tahan","Sulit","Denyut nadi seseorang setelah berlari kencang akan terasa...",["Lebih lambat","Lebih cepat","Berhenti total","Tetap sama"],1,"Jantung memompa darah lebih cepat untuk menyuplai oksigen ke otot."],
+        ["PJOK4-006","PJOK","Perilaku Terpuji","Sulit","Menerima kekalahan dalam pertandingan olahraga dengan lapang dada disebut sikap...",["Curang","Sportif","Sombong","Putus asa"],1,"Sportivitas menjunjung tinggi kejujuran dan rasa hormat dalam bertanding."]
+      ],
+
+      // =====================================================================
+      // KELAS 5 SD (50 SOAL ASLI)
+      // =====================================================================
+      5: [
+        // Matematika (7)
+        ["MTK5-001","Matematika","Operasi Pecahan","Mudah","Hasil dari 1/2 + 1/4 adalah...",["2/6","3/4","2/4","1/6"],1,"Samakan penyebut: 2/4 + 1/4 = 3/4."],
+        ["MTK5-002","Matematika","Volume Kubus","Mudah","Sebuah kubus memiliki panjang rusuk 5 cm. Volume kubus tersebut adalah...",["25 cm³","125 cm³","15 cm³","150 cm³"],1,"Volume kubus = s x s x s = 5 x 5 x 5 = 125 cm³."],
+        ["MTK5-003","Matematika","Kecepatan","Sedang","Sebuah mobil menempuh jarak 120 km dalam waktu 2 jam. Kecepatan rata-rata mobil tersebut adalah...",["40 km/jam","60 km/jam","80 km/jam","240 km/jam"],1,"Kecepatan = Jarak : Waktu = 120 : 2 = 60 km/jam."],
+        ["MTK5-004","Matematika","Skala Peta","Sedang","Jarak dua kota pada peta adalah 4 cm. Jika skala peta 1 : 500.000, jarak sebenarnya adalah...",["2 km","20 km","200 km","2.000 km"],1,"4 x 500.000 cm = 2.000.000 cm = 20 km."],
+        ["MTK5-005","Matematika","Persentase","Sedang","Bentuk persen dari pecahan 3/5 adalah...",["30%","60%","50%","75%"],1,"3/5 x 100% = 60%."],
+        ["MTK5-006","Matematika","Volume Balok","Sulit","Sebuah akuarium berbentuk balok berukuran panjang 50 cm, lebar 30 cm, dan tinggi 40 cm. Volume akuarium adalah...",["6.000 cm³","60.000 cm³","120 cm³","1.500 cm³"],1,"Volume = 50 x 30 x 40 = 60.000 cm³ (60 liter)."],
+        ["MTK5-007","Matematika","Penyajian Data","Sulit","Diagram yang menyajikan data menggunakan gambar atau simbol tertentu disebut diagram...",["Batang","Gambar (Piktogram)","Lingkaran","Garis"],1,"Piktogram menggunakan simbol gambar untuk mewakili jumlah data."],
+        // Bahasa Indonesia (7)
+        ["BIN5-001","Bahasa Indonesia","Pantun","Mudah","Satu bait pantun terdiri dari berapa baris?",["2 baris","4 baris","6 baris","8 baris"],1,"Pantun memiliki 4 baris bersajak a-b-a-b."],
+        ["BIN5-002","Bahasa Indonesia","Struktur Pantun","Mudah","Baris ke-3 dan ke-4 pada sebuah pantun disebut...",["Sampiran","Isi","Judul","Penutup"],1,"Baris 1-2 adalah sampiran, sedangkan baris 3-4 adalah isi pantun."],
+        ["BIN5-003","Bahasa Indonesia","Teks Eksplanasi","Sedang","Teks yang menjelaskan proses terjadinya fenomena alam atau sosial secara ilmiah disebut teks...",["Narasi","Eksplanasi","Prosedur","Deskripsi"],1,"Teks eksplanasi menjelaskan hubungan sebab-akibat suatu fenomena."],
+        ["BIN5-004","Bahasa Indonesia","Iklan","Sedang","Kalimat dalam iklan layanan masyarakat harus bersifat persuasif, artinya...",["Memaksa pembaca","Mengajak atau membujuk pembaca","Menyindir pembaca","Menakut-nakuti pembaca"],1,"Persuasif bertujuan mengajak pembaca melakukan hal positif."],
+        ["BIN5-005","Bahasa Indonesia","Surat Undangan","Sedang","Surat undangan yang dibuat oleh sekolah untuk orang tua siswa termasuk jenis surat...",["Pribadi","Resmi","Niaga","Kaleng"],1,"Surat dari instansi resmi menggunakan kop surat dan bahasa baku."],
+        ["BIN5-006","Bahasa Indonesia","Ringkasan","Sulit","Kegiatan menyajikan karangan panjang dalam bentuk singkat tanpa mengubah urutan ide pokok disebut...",["Mengarang","Meringkas","Mengkritik","Menerjemahkan"],1,"Meringkas mempertahankan urutan gagasan asli secara padat."],
+        ["BIN5-007","Bahasa Indonesia","Imbuhan Pe-an","Sulit","Kata dasar 'tanam' jika mendapat imbuhan 'pe-an' menjadi...",["Petanaman","Penanaman","Pentanaman","Pertanaman"],1,"Huruf 't' luluh menjadi 'n' sehingga menjadi 'penanaman'."],
+        // IPAS (6)
+        ["IPAS5-001","IPAS","Sistem Pencernaan","Mudah","Organ pencernaan manusia yang berfungsi menyerap sari-sari makanan adalah...",["Kerongkongan","Usus halus","Lambung","Usus besar"],1,"Usus halus memiliki jonjot usus untuk menyerap sari makanan."],
+        ["IPAS5-002","IPAS","Sistem Pernapasan","Mudah","Pertukaran oksigen dan karbon dioksida di dalam paru-paru terjadi pada bagian...",["Trakea","Alveolus","Bronkus","Hidung"],1,"Alveolus adalah gelembung udara halus tempat pertukaran gas."],
+        ["IPAS5-003","IPAS","Ekosistem","Sedang","Dalam rantai makanan: Padi -> Tikus -> Ular -> Elang. Ular berperan sebagai...",["Produsen","Konsumen tingkat II","Konsumen tingkat I","Pengurai"],1,"Padi (produsen), Tikus (konsumen I), Ular (konsumen II)."],
+        ["IPAS5-004","IPAS","Perpindahan Kalor","Sedang","Panas matahari sampai ke bumi tanpa melalui zat perantara disebut perpindahan kalor secara...",["Konduksi","Radiasi","Konveksi","Isolasi"],1,"Radiasi adalah perpindahan panas secara pancaran."],
+        ["IPAS5-005","IPAS","Letak Geografis","Sulit","Indonesia disebut negara maritim karena...",["Memiliki banyak gunung berapi","Sebagian besar wilayahnya berupa perairan laut","Memiliki hutan hujan tropis","Terletak di garis khatulistiwa"],1,"Dua pertiga wilayah Indonesia berupa lautan yang menghubungkan ribuan pulau."],
+        ["IPAS5-006","IPAS","Sistem Peredaran Darah","Sulit","Bagian darah yang berfungsi mengangkut oksigen ke seluruh tubuh adalah...",["Keping darah","Sel darah merah (eritrosit)","Sel darah putih","Plasma darah"],1,"Sel darah merah mengandung hemoglobin yang mengikat oksigen."],
+        // Pendidikan Pancasila (6)
+        ["PPKN5-001","Pendidikan Pancasila","BPUPKI","Mudah","Badan yang dibentuk untuk mempersiapkan kemerdekaan Indonesia adalah...",["PSSI","BPUPKI","ASEAN","PBB"],1,"BPUPKI (Badan Penyelidik Usaha-usaha Persiapan Kemerdekaan Indonesia)."],
+        ["PPKN5-002","Pendidikan Pancasila","Tanggung Jawab","Mudah","Menjaga kebersihan sungai di lingkungan desa adalah tanggung jawab...",["Petugas kebersihan saja","Seluruh warga masyarakat","Kepala desa saja","Anak-anak sekolah saja"],1,"Kebersihan lingkungan adalah tanggung jawab bersama."],
+        ["PPKN5-003","Pendidikan Pancasila","Keragaman Budaya","Sedang","Alat musik Sasando yang dipetik berasal dari provinsi...",["Maluku","Nusa Tenggara Timur","Kalimantan Barat","Sulawesi Utara"],1,"Sasando berasal dari Pulau Rote, Nusa Tenggara Timur."],
+        ["PPKN5-004","Pendidikan Pancasila","Sumpah Pemuda","Sedang","Ikrar Sumpah Pemuda diucapkan pada tanggal...",["17 Agustus 1945","28 Oktober 1928","20 Mei 1908","10 November 1945"],1,"Sumpah Pemuda 28 Oktober 1928 menegaskan satu tanah air, satu bangsa, satu bahasa."],
+        ["PPKN5-005","Pendidikan Pancasila","Nilai Juang","Sulit","Para pahlawan merumuskan dasar negara dengan mengutamakan sikap...",["Menang sendiri","Toleransi dan musyawarah","Kekerasan","Perpecahan"],1,"Para pendiri bangsa saling menghargai perbedaan demi persatuan Indonesia."],
+        ["PPKN5-006","Pendidikan Pancasila","NKRI","Sulit","Bentuk negara Indonesia menurut Pasal 1 Ayat 1 UUD 1945 adalah...",["Negara Serikat","Negara Kesatuan yang berbentuk Republik","Negara Kerajaan","Negara Persemakmuran"],1,"Indonesia adalah Negara Kesatuan Republik Indonesia (NKRI)."],
+        // Bahasa Inggris (6)
+        ["ING5-001","Bahasa Inggris","Health Problems","Mudah","'I have a toothache.' Artinya saya sedang sakit...",["Kepala","Gigi","Perut","Tenggorokan"],1,"Tooth = gigi, ache = sakit."],
+        ["ING5-002","Bahasa Inggris","Months","Mudah","Bulan ke-8 dalam kalender Masehi adalah...",["July","August","September","October"],1,"August adalah bulan Agustus."],
+        ["ING5-003","Bahasa Inggris","Comparative","Sedang","'An elephant is ... than a cat.' Kata sifat perbandingan yang tepat adalah...",["big","bigger","biggest","small"],1,"Perbandingan dua benda menggunakan akhiran -er (bigger than)."],
+        ["ING5-004","Bahasa Inggris","Clothes","Sedang","Pakaian yang dikenakan saat cuaca dingin adalah...",["Swimsuit","Sweater / Jacket","Shorts","Sandals"],1,"Sweater atau jaket menjaga tubuh tetap hangat."],
+        ["ING5-005","Bahasa Inggris","Past Tense","Sulit","'Yesterday, we ... to the museum.' Kata kerja bentuk lampau yang tepat adalah...",["go","went","going","goes"],1,"Bentuk lampau (Verb 2) dari 'go' adalah 'went'."],
+        ["ING5-006","Bahasa Inggris","Describing People","Sulit","'Rina always helps her friends. She is very...' Kata yang tepat adalah...",["Lazy","Helpful","Angry","Selfish"],1,"Helpful artinya suka menolong."],
+        // Pendidikan Agama (6)
+        ["AGM5-001","Pendidikan Agama","Menghargai Pendapat","Mudah","Saat berdiskusi kelompok di kelas, kita harus menghargai...",["Pendapat teman yang berbeda","Pendapat diri sendiri saja","Teman yang kaya saja","Ketua kelompok saja"],1,"Menghargai pendapat orang lain mencerminkan kedewasaan akhlak."],
+        ["AGM5-002","Pendidikan Agama","Keikhlasan","Mudah","Memberikan sedekah atau bantuan kepada fakir miskin sebaiknya dilakukan dengan...",["Pamer di media sosial","Ikhlas mengharap rida Tuhan","Mengharap pujian","Mengungkit-ungkitnya"],1,"Bantuan yang ikhlas bernilai ibadah di sisi Tuhan."],
+        ["AGM5-003","Pendidikan Agama","Menjaga Lisan","Sedang","Berkata sopan dan tidak menyakiti perasaan teman disebut menjaga...",["Harta","Lisan (ucapan)","Pakaian","Langkah"],1,"Ucapan yang baik membawa kedamaian bagi orang di sekitar kita."],
+        ["AGM5-004","Pendidikan Agama","Tanggung Jawab Alam","Sedang","Manusia diciptakan Tuhan sebagai pemelihara bumi, sehingga kita dilarang...",["Menanam pohon","Merusak alam dan mencemari lingkungan","Membersihkan selokan","Menghemat air"],1,"Merusak alam merugikan seluruh makhluk hidup."],
+        ["AGM5-005","Pendidikan Agama","Rendah Hati","Sulit","Orang yang tidak sombong meskipun memiliki banyak prestasi disebut...",["Tinggi hati","Rendah hati (tawaduk)","Putus asa","Penakut"],1,"Rendah hati adalah sikap terpuji yang menghormati sesama."],
+        ["AGM5-006","Pendidikan Agama","Keadilan","Sulit","Memutuskan suatu perkara tanpa memihak salah satu orang secara curang disebut...",["Pilih kasih","Adil","Dendam","Iri hati"],1,"Adil berarti menempatkan sesuatu pada tempatnya."],
+        // Seni Budaya (6)
+        ["SBDP5-001","Seni Budaya","Cerita Bergambar","Mudah","Rangkaian gambar yang dilengkapi teks cerita untuk menjelaskan suatu peristiwa disebut...",["Patung","Komik / Cerita bergambar","Relief","Kaligrafi"],1,"Komik memadukan seni gambar dan alur cerita."],
+        ["SBDP5-002","Seni Budaya","Tangga Nada Mayor","Mudah","Lagu bertangga nada diatonis mayor biasanya bersifat...",["Sedih dan lambat","Riang gembira dan bersemangat","Menakutkan","Sangat pelan"],1,"Tangga nada mayor berkesan ceria, seperti lagu Hari Merdeka."],
+        ["SBDP5-003","Seni Budaya","Properti Tari","Sedang","Benda yang digunakan penari sebagai perlengkapan menari di atas panggung disebut...",["Kostum harian","Properti tari","Panggung","Penonton"],1,"Contoh properti tari: kipas, selendang, piring, atau topeng."],
+        ["SBDP5-004","Seni Budaya","Batik Nusantara","Sedang","Alat tradisional yang digunakan untuk melukis malam (lilin) pada kain batik tulis adalah...",["Kuas cat","Canting","Pahat","Jarum jahit"],1,"Canting berfungsi menorehkan malam cair di atas kain mori."],
+        ["SBDP5-005","Seni Budaya","Cover Buku","Sulit","Gambar yang terdapat pada bagian paling depan sebuah buku disebut...",["Daftar pustaka","Sampul (Cover) buku","Daftar isi","Glosarium"],1,"Cover buku mencerminkan isi buku dan menarik minat pembaca."],
+        ["SBDP5-006","Seni Budaya","Pola Lantai Tari","Sulit","Formasi penari yang membentuk garis lurus dari depan ke belakang disebut pola lantai...",["Horizontal","Vertikal","Melingkar","Zig-zag"],1,"Garis lurus depan-belakang adalah pola lantai vertikal."],
+        // PJOK (6)
+        ["PJOK5-001","PJOK","Sepak Bola","Mudah","Teknik mengoper bola kepada teman satu tim dalam sepak bola disebut...",["Shooting","Passing","Heading","Tackling"],1,"Passing adalah teknik mengumpan bola."],
+        ["PJOK5-002","PJOK","Bola Basket","Mudah","Memantul-mantulkan bola basket ke lantai sambil berjalan atau berlari disebut...",["Passing","Dribbling","Shooting","Rebound"],1,"Dribbling adalah teknik menggiring bola basket."],
+        ["PJOK5-003","PJOK","Sistem Pernapasan & Olahraga","Sedang","Kebiasaan merokok sangat berbahaya karena dapat merusak organ...",["Tulang kaki","Paru-paru dan jantung","Kuku jari","Rambut"],1,"Zat beracun dalam rokok merusak saluran pernapasan dan jantung."],
+        ["PJOK5-004","PJOK","Lompat Jauh","Sedang","Urutan tahapan dalam lompat jauh yang benar adalah...",["Tolakan - awalan - mendarat","Awalan - tolakan - melayang - mendarat","Mendarat - melayang - awalan","Melayang - awalan - tolakan"],1,"Lompat jauh dimulai dengan lari awalan, tolakan satu kaki, melayang, lalu mendarat."],
+        ["PJOK5-005","PJOK","Kebugaran","Sulit","Kemampuan otot melakukan aktivitas berulang-ulang dalam waktu lama tanpa kelelahan berarti disebut...",["Kelenturan","Daya tahan otot","Keseimbangan","Kelincahan"],1,"Daya tahan otot penting untuk aktivitas fisik jangka panjang."],
+        ["PJOK5-006","PJOK","Keselamatan Air","Sulit","Alat bantu keselamatan yang wajib dipakai saat naik perahu wisata adalah...",["Topi pantai","Pelampung (Life jacket)","Kacamata hitam","Payung"],1,"Pelampung menjaga tubuh tetap mengapung di permukaan air."]
+      ],
+
+      // =====================================================================
+      // KELAS 6 SD (50 SOAL ASLI)
+      // =====================================================================
+      6: [
+        // Matematika (7)
+        ["MTK6-001","Matematika","Bilangan Bulat Negatif","Mudah","Hasil dari -8 + 15 adalah...",["-7","7","23","-23"],1,"Utang 8 dibayar 15 masih tersisa positif 7."],
+        ["MTK6-002","Matematika","Luas Lingkaran","Mudah","Sebuah lingkaran memiliki jari-jari 7 cm (π = 22/7). Luas lingkaran tersebut adalah...",["44 cm²","154 cm²","22 cm²","308 cm²"],1,"Luas = π x r² = 22/7 x 7 x 7 = 154 cm²."],
+        ["MTK6-003","Matematika","Operasi Hitung Campuran","Sedang","Hasil dari 24 + 36 : (-6) adalah...",["-10","18","30","-18"],1,"Kerjakan pembagian dahulu: 36 : (-6) = -6. Lalu 24 + (-6) = 18."],
+        ["MTK6-004","Matematika","Mean (Rata-rata)","Sedang","Nilai ulangan Budi adalah 80, 90, 70, dan 80. Rata-rata nilai Budi adalah...",["75","80","85","82"],1,"(80 + 90 + 70 + 80) : 4 = 320 : 4 = 80."],
+        ["MTK6-005","Matematika","Volume Tabung","Sedang","Sebuah tabung memiliki luas alas 50 cm² dan tinggi 12 cm. Volume tabung adalah...",["62 cm³","600 cm³","300 cm³","120 cm³"],1,"Volume tabung = Luas alas x tinggi = 50 x 12 = 600 cm³."],
+        ["MTK6-006","Matematika","Median","Sulit","Data berat badan (kg): 34, 36, 32, 38, 35. Median (nilai tengah) data tersebut adalah...",["32","35","36","34"],1,"Urutkan data: 32, 34, [35], 36, 38. Nilai tengahnya adalah 35."],
+        ["MTK6-007","Matematika","Aritmatika Sosial","Sulit","Harga sebuah tas Rp200.000,00 mendapat diskon 25%. Harga tas yang harus dibayar adalah...",["Rp175.000,00","Rp150.000,00","Rp125.000,00","Rp50.000,00"],1,"Diskon = 25% x 200.000 = 50.000. Bayar = 200.000 - 50.000 = Rp150.000,00."],
+        // Bahasa Indonesia (7)
+        ["BIN6-001","Bahasa Indonesia","Teks Laporan Pengamatan","Mudah","Laporan hasil pengamatan harus disusun berdasarkan...",["Khayalan penulis","Fakta yang diamati","Cerita dongeng","Tebakan semata"],1,"Teks laporan bersifat objektif dan berdasarkan fakta lapangan."],
+        ["BIN6-002","Bahasa Indonesia","Pidato","Mudah","Bagian pidato yang berisi ucapan puji syukur dan sapaan kepada hadirin adalah...",["Isi pidato","Pembukaan pidato","Penutup pidato","Kesimpulan"],1,"Pembukaan diawali salam penghormatan dan ucapan syukur."],
+        ["BIN6-003","Bahasa Indonesia","Formulir","Sedang","Data yang wajib diisi dengan benar saat mengisi formulir pendaftaran lomba adalah...",["Nama samaran","Identitas diri lengkap dan sesuai akta","Nama hewan peliharaan","Hobi tetangga"],1,"Formulir membutuhkan data identitas yang sah dan akurat."],
+        ["BIN6-004","Bahasa Indonesia","Sinonim Kontekstual","Sedang","'Para ilmuwan melakukan observasi terhadap gerhana matahari.' Kata 'observasi' bermakna...",["Perayaan","Pengamatan","Perdebatan","Penolakan"],1,"Observasi berarti peninjauan atau pengamatan secara cermat."],
+        ["BIN6-005","Bahasa Indonesia","Kalimat Langsung","Sedang","Penulisan kalimat langsung yang tepat adalah...",["Ibu berkata, \"Belajarlah dengan tekun!\"","Ibu berkata Belajarlah dengan tekun.","\"Ibu berkata\" belajarlah dengan tekun.","Ibu berkata: belajarlah dengan tekun!"],0,"Kalimat langsung diapit oleh tanda petik dua (\"...\")."],
+        ["BIN6-006","Bahasa Indonesia","Teks Fiksi & Nonfiksi","Sulit","Buku biografi tokoh pahlawan nasional termasuk jenis karangan...",["Fiksi","Nonfiksi","Dongeng","Legenda"],1,"Biografi memuat kisah nyata perjalanan hidup tokoh sehingga termasuk nonfiksi."],
+        ["BIN6-007","Bahasa Indonesia","Ungkapan / Idiom","Sulit","'Pak Ahmad dikenal sebagai orang yang ringan tangan di desanya.' Arti ungkapan 'ringan tangan' adalah...",["Suka memukul","Suka menolong","Suka mencuri","Malas bekerja"],1,"Ringan tangan berarti gemar membantu orang lain."],
+        // IPAS (6)
+        ["IPAS6-001","IPAS","Perkembangbiakan Tumbuhan","Mudah","Perkembangbiakan tumbuhan secara kawin melalui penyerbukan bunga disebut perkembangbiakan...",["Vegetatif","Generatif","Setek","Cangkok"],1,"Generatif melibatkan sel kelamin jantan (benang sari) dan betina (putik)."],
+        ["IPAS6-002","IPAS","Tata Surya","Mudah","Planet terbesar dalam sistem tata surya kita adalah...",["Mars","Jupiter","Bumi","Merkurius"],1,"Jupiter adalah planet raksasa terbesar di tata surya."],
+        ["IPAS6-003","IPAS","Rotasi Bumi","Sedang","Perputaran bumi pada porosnya (rotasi bumi) mengakibatkan terjadinya...",["Perubahan musim","Siang dan malam","Gerhana bulan","Tahun kabisat"],1,"Bagian bumi yang menghadap matahari mengalami siang, yang membelakangi mengalami malam."],
+        ["IPAS6-004","IPAS","Rangkaian Listrik","Sedang","Jika salah satu lampu pada rangkaian listrik seri padam, maka lampu lainnya akan...",["Tetap menyala terang","Ikut padam","Berkedip-kedip","Meledak"],1,"Pada rangkaian seri arus mengalir dalam satu jalur tanpa cabang."],
+        ["IPAS6-005","IPAS","Adaptasi Hewan","Sulit","Bunglon mengubah warna kulitnya sesuai tempat yang disinggahi untuk mengelabui musuh. Kemampuan ini disebut...",["Autotomi","Mimikri","Ekolokasi","Hibernasi"],1,"Mimikri adalah kemampuan mengubah warna kulit sesuai lingkungan."],
+        ["IPAS6-006","IPAS","Pemanasan Global","Sulit","Meningkatnya suhu rata-rata permukaan bumi akibat efek rumah kaca disebut...",["Reboisasi","Pemanasan global (Global Warming)","Kondensasi","Abrasi pantai"],1,"Emisi gas karbon berlebih memerangkap panas matahari di atmosfer bumi."],
+        // Pendidikan Pancasila (6)
+        ["PPKN6-001","Pendidikan Pancasila","Proklamasi","Mudah","Teks Proklamasi Kemerdekaan Indonesia dibacakan oleh Ir. Soekarno didampingi oleh...",["Jenderal Sudirman","Drs. Mohammad Hatta","Ki Hajar Dewantara","Bung Tomo"],1,"Soekarno-Hatta adalah Dwitunggal Proklamator kemerdekaan Indonesia."],
+        ["PPKN6-002","Pendidikan Pancasila","ASEAN","Mudah","Organisasi kerja sama negara-negara di kawasan Asia Tenggara adalah...",["NATO","ASEAN","OPEC","UNICEF"],1,"Indonesia merupakan salah satu dari 5 negara pendiri ASEAN."],
+        ["PPKN6-003","Pendidikan Pancasila","Cinta Produk Lokal","Sedang","Membeli dan bangga memakai sepatu buatan pengrajin dalam negeri merupakan wujud...",["Gaya hidup mewah","Cinta tanah air dan mendukung ekonomi bangsa","Menolak kemajuan teknologi","Boros uang"],1,"Membeli produk lokal membantu kesejahteraan UMKM Indonesia."],
+        ["PPKN6-004","Pendidikan Pancasila","Pasal UUD 1945","Sedang","Setiap warga negara berhak mendapat pendidikan tercantum dalam UUD 1945 Pasal...",["28","31","33","34"],1,"Pasal 31 UUD 1945 mengatur hak dan kewajiban warga negara di bidang pendidikan."],
+        ["PPKN6-005","Pendidikan Pancasila","Globalisasi","Sulit","Sikap bijak dalam menghadapi arus budaya asing di era globalisasi adalah...",["Menerima semua budaya asing","Menyaring sesuai nilai-nilai Pancasila","Menutup diri dari dunia luar","Melupakan budaya daerah"],1,"Pancasila menjadi filter dalam menyaring pengaruh globalisasi."],
+        ["PPKN6-006","Pendidikan Pancasila","Demokrasi","Sulit","Pemilihan Umum (Pemilu) di Indonesia dilaksanakan berdasarkan asas LUBER JURDIL. Kata 'JURDIL' berarti...",["Jujur dan Adil","Jauh dan Adil","Jelas dan Rapi","Jujur dan Disiplin"],1,"LUBER JURDIL: Langsung, Umum, Bebas, Rahasia, Jujur, dan Adil."],
+        // Bahasa Inggris (6)
+        ["ING6-001","Bahasa Inggris","Future Tense","Mudah","'Tomorrow, I ... visit my grandmother.' Kata bantu yang tepat adalah...",["was","will","did","am"],1,"Tomorrow (besok) menggunakan Simple Future Tense dengan 'will'."],
+        ["ING6-002","Bahasa Inggris","Public Places","Mudah","Tempat untuk mengirim surat dan paket adalah...",["Hospital","Post office","Library","Bank"],1,"Post office adalah kantor pos."],
+        ["ING6-003","Bahasa Inggris","Superlative","Sedang","'Mount Everest is the ... mountain in the world.' Kata yang tepat adalah...",["high","highest","higher","tall"],1,"Paling tinggi menggunakan bentuk superlative 'the highest'."],
+        ["ING6-004","Bahasa Inggris","Environment","Sedang","'We must keep our environment clean.' Kata 'environment' berarti...",["Pakaian","Lingkungan","Makanan","Perpustakaan"],1,"Environment berarti lingkungan hidup."],
+        ["ING6-005","Bahasa Inggris","Question Words","Sulit","'... does the train leave? At 8 a.m.' Kata tanya yang tepat adalah...",["Where","When","Who","Why"],1,"Jawaban 'At 8 a.m.' menunjukkan waktu sehingga menggunakan 'When' (Kapan)."],
+        ["ING6-006","Bahasa Inggris","Conjunctions","Sulit","'Budi studied hard, ... he passed the exam.' Kata penghubung yang tepat adalah...",["because","so","but","or"],1,"'So' berarti 'sehingga' yang menunjukkan akibat."],
+        // Pendidikan Agama (6)
+        ["AGM6-001","Pendidikan Agama","Persaudaraan","Mudah","Sesama manusia adalah bersaudara, maka kita harus menjauhi sikap...",["Saling membantu","Saling membenci dan bermusuhan","Saling menyapa","Saling memaafkan"],1,"Kebencian merusak persatuan dan ketenangan hidup."],
+        ["AGM6-002","Pendidikan Agama","Infak dan Sedekah","Mudah","Menyisihkan sebagian uang saku untuk kotak amal atau panti asuhan melatih sifat...",["Kikir","Dermawan","Sombong","Serakah"],1,"Dermawan adalah sifat suka berbagi kepada sesama yang membutuhkan."],
+        ["AGM6-003","Pendidikan Agama","Berpikir Positif","Sedang","Berbaik sangka kepada teman dan tidak mudah menuduh tanpa bukti disebut...",["Suuzan","Husnuzan (berbaik sangka)","Ghibah","Fitnah"],1,"Berbaik sangka menjaga hati tetap bersih dan terhindar dari fitnah."],
+        ["AGM6-004","Pendidikan Agama","Tanggung Jawab Pemimpin","Sedang","Seorang ketua kelas yang baik harus memimpin teman-temannya dengan sikap...",["Otoriter","Bijaksana dan adil","Pilih kasih","Acuh tak acuh"],1,"Pemimpin yang adil menjadi teladan bagi anggotanya."],
+        ["AGM6-005","Pendidikan Agama","Ketekunan","Sulit","Berusaha sungguh-sungguh sebelum berserah diri kepada Tuhan disebut...",["Pasrah tanpa usaha","Ikhtiar","Putus asa","Mengeluh"],1,"Ikhtiar adalah usaha maksimal yang disertai doa."],
+        ["AGM6-006","Pendidikan Agama","Menjaga Amanah Lingkungan","Sulit","Menghemat penggunaan air bersih dan listrik di rumah merupakan wujud...",["Pemborosan","Amanah menjaga kelestarian alam","Kemiskinan","Kemalasan"],1,"Hemat energi menjaga ketersediaan sumber daya bagi generasi mendatang."],
+        // Seni Budaya (6)
+        ["SBDP6-001","Seni Budaya","Reklame","Mudah","Media visual yang bertujuan mempromosikan barang atau jasa kepada masyarakat luas disebut...",["Dongeng","Reklame / Poster","Buku harian","Surat izin"],1,"Reklame dibuat menarik agar pesan promosi tersampaikan."],
+        ["SBDP6-002","Seni Budaya","Seni Patung","Mudah","Karya seni tiga dimensi yang dibuat dengan cara memahat kayu atau batu disebut...",["Lukisan","Patung","Anyaman","Sablon"],1,"Patung dapat dilihat dari berbagai arah (tiga dimensi)."],
+        ["SBDP6-003","Seni Budaya","Interval Nada","Sedang","Jarak antara satu nada dengan nada lainnya dalam tangga nada disebut...",["Tempo","Interval nada","Birama","Ritme"],1,"Interval nada menentukan keselarasan melodi."],
+        ["SBDP6-004","Seni Budaya","Tari Kreasi Daerah","Sedang","Tari daerah yang gerakannya telah dikembangkan mengikuti perkembangan zaman tanpa meninggalkan ciri khas tradisinya disebut...",["Tari klasik murni","Tari kreasi daerah","Tari modern asing","Senam irama"],1,"Tari kreasi daerah memadukan unsur tradisi dan inovasi."],
+        ["SBDP6-005","Seni Budaya","Poster Pendidikan","Sulit","Ciri utama kalimat pada poster pendidikan yang baik adalah...",["Panjang seperti cerpen","Singkat, padat, jelas, dan mudah diingat","Menggunakan bahasa asing yang rumit","Tanpa gambar pendukung"],1,"Poster dibaca sekilas sehingga kalimatnya harus ringkas dan kuat."],
+        ["SBDP6-006","Seni Budaya","Teknik Membatik","Sulit","Proses menghilangkan lilin malam pada kain batik dengan cara direbus dalam air panas disebut...",["Nyanting","Nglorod","Nyolet","Mencolet"],1,"Nglorod adalah tahap akhir merebus kain agar malam lepas dan motif terlihat."],
+        // PJOK (6)
+        ["PJOK6-001","PJOK","Permainan Bola Kecil","Mudah","Permainan kasti dan rounders termasuk cabang permainan...",["Bola besar","Bola kecil","Atletik","Renang"],1,"Kasti dan rounders menggunakan bola berukuran kecil dan pemukul."],
+        ["PJOK6-002","PJOK","Kebugaran Jasmani","Mudah","Latihan lari bolak-balik (shuttle run) bertujuan untuk melatih...",["Kekuatan lengan","Kelincahan (agility)","Kelenturan punggung","Keseimbangan"],1,"Shuttle run melatih kemampuan mengubah arah gerak dengan cepat."],
+        ["PJOK6-003","PJOK","Kesehatan Reproduksi","Sedang","Menjaga kebersihan organ tubuh dan mengganti pakaian dalam dua kali sehari bertujuan untuk...",["Mengikuti tren","Mencegah pertumbuhan jamur dan bakteri","Menghabiskan sabun","Menambah berat badan"],1,"Kebersihan diri menjaga kesehatan organ tubuh di masa pubertas."],
+        ["PJOK6-004","PJOK","Senam Irama","Sedang","Senam yang dilakukan dengan mengikuti iringan musik atau hitungan berirama disebut...",["Senam lantai","Senam ritmik / irama","Senam ketangkasan","Angkat besi"],1,"Senam irama memadukan gerakan tubuh dan ketukan musik."],
+        ["PJOK6-005","PJOK","Pencegahan Bahaya","Sulit","Menolak dengan tegas ajakan mencoba zat adiktif atau rokok merupakan sikap...",["Penakut","Tegas menjaga kesehatan masa depan","Tidak setia kawan","Sombong"],1,"Zat adiktif merusak saraf dan masa depan generasi muda."],
+        ["PJOK6-006","PJOK","Denyut Nadi Maksimal","Sulit","Mengukur denyut nadi dapat dilakukan dengan meraba bagian...",["Ujung rambut","Pergelangan tangan atau sisi leher","Tempurung lutut","Tumit kaki"],1,"Pembuluh nadi di pergelangan tangan (radialis) dan leher (karotis) mudah diraba."]
+      ]
+    };
+
+    // Hydrate 300 soal menjadi array objek terstruktur
+    function buildDefaultQuestionBank() {
+      const bank = [];
+      const seenIds = new Set();
+      for (const kelasStr of Object.keys(RAW_CURATED_DATA)) {
+        const kelasNum = parseInt(kelasStr, 10);
+        RAW_CURATED_DATA[kelasStr].forEach(item => {
+          const [id, mapel, materi, tingkat, pertanyaan, pilihan, jawaban, pembahasan] = item;
+          if (!seenIds.has(id)) {
+            seenIds.add(id);
+            bank.push({
+              id,
+              kelas: kelasNum,
+              mapel,
+              materi,
+              tingkat,
+              pertanyaan,
+              pilihan: [...pilihan],
+              jawaban,
+              pembahasan,
+              isCustom: false
+            });
+          }
+        });
+      }
+      return bank;
+    }
+
+    const STORAGE_KEY = 'sdn_kesilir02_bank_soal_v1';
+    let masterQuestionBank = [];
+
+    function loadMasterBank() {
+      const baseBank = buildDefaultQuestionBank();
+      try {
+        const savedCustom = localStorage.getItem(STORAGE_KEY);
+        if (savedCustom) {
+          const parsed = JSON.parse(savedCustom);
+          if (Array.isArray(parsed)) {
+            const existingIds = new Set(baseBank.map(q => q.id));
+            parsed.forEach(cq => {
+              if (cq && cq.id && !existingIds.has(cq.id)) {
+                baseBank.push({ ...cq, isCustom: true });
+                existingIds.add(cq.id);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Gagal memuat soal kustom dari penyimpanan lokal:', e);
+      }
+      masterQuestionBank = baseBank;
+      document.getElementById('totalBankBadge').textContent = masterQuestionBank.length;
+    }
+
+    function saveCustomQuestionsToStorage() {
+      try {
+        const customOnly = masterQuestionBank.filter(q => q.isCustom);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(customOnly));
+      } catch (e) {
+        console.warn('Gagal menyimpan ke localStorage:', e);
+      }
+      document.getElementById('totalBankBadge').textContent = masterQuestionBank.length;
+    }
+
+    /*************************************************************************
+     * BAGIAN 3: MESIN ANTI-PENGULANGAN SOAL (SESSION QUEUE + USED SET)
+     * Menjamin 100% tidak ada ID soal yang muncul >1 kali dalam 1 sesi,
+     * baik untuk Pemain 1-4 maupun Bot AI, maupun saat jawaban salah.
+     *************************************************************************/
+    const SessionQuizEngine = {
+      sessionQueue: [],       // Antrean soal teracak untuk sesi ini
+      usedQuestionIds: new Set(), // Set ID soal yang SUDAH pernah tampil
+      historyLog: [],         // Riwayat tampilan untuk UI
+      totalInitialCount: 0,
+
+      // Fisher-Yates Shuffle (Acak murni tanpa bias)
+      shuffleArray(arr) {
+        const copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      },
+
+      // Inisialisasi sesi baru berdasarkan filter kelas, mapel, dan tingkat
+      initSession(kelasFilter, mapelFilter, tingkatFilter) {
+        this.usedQuestionIds.clear();
+        this.historyLog = [];
+
+        const filtered = masterQuestionBank.filter(q => {
+          const matchKelas = kelasFilter === 'ALL' || String(q.kelas) === String(kelasFilter);
+          const matchMapel = mapelFilter === 'ALL' || q.mapel === mapelFilter;
+          const matchTingkat = tingkatFilter === 'ALL' || q.tingkat === tingkatFilter;
+          return matchKelas && matchMapel && matchTingkat;
+        });
+
+        // Pastikan tidak ada duplikat ID di dalam antrean sesi
+        const uniqueMap = new Map();
+        filtered.forEach(q => {
+          if (!uniqueMap.has(q.id)) {
+            uniqueMap.set(q.id, q);
+          }
+        });
+
+        const uniqueList = Array.from(uniqueMap.values());
+        this.sessionQueue = this.shuffleArray(uniqueList);
+        this.totalInitialCount = this.sessionQueue.length;
+        return this.totalInitialCount;
+      },
+
+      // Ambil 1 soal berikutnya & LANGSUNG tandai terpakai (Anti-Pengulangan)
+      drawNextQuestion(playerName) {
+        while (this.sessionQueue.length > 0) {
+          const candidate = this.sessionQueue.shift(); // Hapus dari antrean
+          // Validasi berlapis menggunakan Set ID unik
+          if (!this.usedQuestionIds.has(candidate.id)) {
+            this.usedQuestionIds.add(candidate.id); // Kunci permanen untuk sesi ini
+
+            // Acak posisi pilihan jawaban (A, B, C, D) sambil menjaga kunci jawaban benar
+            const indexedOptions = candidate.pilihan.map((text, idx) => ({
+              text,
+              isCorrect: idx === candidate.jawaban
+            }));
+            const shuffledOptions = this.shuffleArray(indexedOptions);
+            const newCorrectIndex = shuffledOptions.findIndex(o => o.isCorrect);
+
+            const preparedQuestion = {
+              ...candidate,
+              shuffledPilihan: shuffledOptions.map(o => o.text),
+              shuffledJawaban: newCorrectIndex
+            };
+
+            this.historyLog.unshift({
+              id: candidate.id,
+              mapel: candidate.mapel,
+              kelas: candidate.kelas,
+              player: playerName,
+              status: 'Ditampilkan'
+            });
+
+            return preparedQuestion;
+          }
+        }
+        // Jika antrean kosong, kembalikan null -> memicu notifikasi BANK SOAL HABIS
+        return null;
+      },
+
+      updateLastHistoryStatus(id, isCorrect) {
+        const entry = this.historyLog.find(h => h.id === id);
+        if (entry) {
+          entry.status = isCorrect ? 'Benar ✅' : 'Salah ❌ (Terkunci)';
+        }
+      },
+
+      getRemainingCount() {
+        return this.sessionQueue.length;
+      }
+    };
+
+    /*************************************************************************
+     * BAGIAN 4: KONFIGURASI PAPAN ULAR TANGGA & LOGIKA PERMAINAN
+     *************************************************************************/
+    // Definisi Tangga (Naik) dan Ular (Turun) pada Papan 1 - 100
+    const LADDERS = {
+      4: 25,
+      13: 46,
+      22: 58,
+      33: 67,
+      42: 63,
+      50: 69,
+      62: 81,
+      74: 92
+    };
+
+    const SNAKES = {
+      27: 5,
+      40: 18,
+      47: 16,
+      54: 31,
+      66: 45,
+      76: 56,
+      89: 53,
+      98: 64
+    };
+
+    const PLAYER_THEMES = [
+      { avatar: '🦁', colorName: 'Merah Singa', bg: 'bg-rose-600', ring: 'ring-rose-200', text: 'text-rose-700', light: 'bg-rose-50' },
+      { avatar: '🐼', colorName: 'Biru Panda', bg: 'bg-sky-600', ring: 'ring-sky-200', text: 'text-sky-700', light: 'bg-sky-50' },
+      { avatar: '🦊', colorName: 'Oranye Rubah', bg: 'bg-amber-500', ring: 'ring-amber-200', text: 'text-amber-700', light: 'bg-amber-50' },
+      { avatar: '🐸', colorName: 'Hijau Katak', bg: 'bg-emerald-600', ring: 'ring-emerald-200', text: 'text-emerald-700', light: 'bg-emerald-50' }
+    ];
+
+    let gameState = {
+      active: false,
+      players: [],
+      currentPlayerIndex: 0,
+      pendingDiceRoll: 0,
+      activeQuestion: null,
+      lastAnswerCorrect: false,
+      isAnimating: false
+    };
+
+    // Hitung koordinat persentase (0..100) pusat kotak nomor 1..100 pada papan zig-zag
+    function getCellCenterPercent(cellNumber) {
+      const clamped = Math.max(1, Math.min(100, cellNumber));
+      const zeroIdx = clamped - 1;
+      const rowFromBottom = Math.floor(zeroIdx / 10); // 0..9
+      const colInRow = zeroIdx % 10; // 0..9
+      const visualCol = (rowFromBottom % 2 === 0) ? colInRow : (9 - colInRow);
+      const visualRow = 9 - rowFromBottom; // 0 di atas, 9 di bawah
+
+      return {
+        x: (visualCol + 0.5) * 10,
+        y: (visualRow + 0.5) * 10
+      };
+    }
+
+    // Render 100 kotak papan + SVG Ular & Tangga
+    function renderBoard() {
+      const grid = document.getElementById('boardGrid');
+      grid.innerHTML = '';
+
+      const cellColors = [
+        'bg-amber-50', 'bg-sky-50', 'bg-emerald-50', 'bg-rose-50', 'bg-violet-50'
+      ];
+
+      for (let visualRow = 0; visualRow < 10; visualRow++) {
+        const rowFromBottom = 9 - visualRow;
+        for (let visualCol = 0; visualCol < 10; visualCol++) {
+          const actualCol = (rowFromBottom % 2 === 0) ? visualCol : (9 - visualCol);
+          const num = rowFromBottom * 10 + actualCol + 1;
+
+          const cell = document.createElement('div');
+          let bgClass = cellColors[(num + visualRow) % cellColors.length];
+          let badgeHtml = '';
+
+          if (num === 1) {
+            bgClass = 'bg-emerald-200';
+            badgeHtml = '<span class="text-[9px] sm:text-[10px] font-extrabold text-emerald-900">START</span>';
+          } else if (num === 100) {
+            bgClass = 'bg-amber-300';
+            badgeHtml = '<span class="text-[9px] sm:text-[10px] font-extrabold text-amber-950">🏆 FIN</span>';
+          } else if (LADDERS[num]) {
+            bgClass = 'bg-emerald-100/90';
+            badgeHtml = `<span class="text-[9px] sm:text-[10px] font-bold text-emerald-700">🪜→${LADDERS[num]}</span>`;
+          } else if (SNAKES[num]) {
+            bgClass = 'bg-rose-100/90';
+            badgeHtml = `<span class="text-[9px] sm:text-[10px] font-bold text-rose-700">🐍→${SNAKES[num]}</span>`;
+          }
+
+          cell.className = `board-cell ${bgClass}`;
+          cell.innerHTML = `
+            <span class="text-slate-700 leading-none">${num}</span>
+            <div class="text-right leading-none">${badgeHtml}</div>
+          `;
+          grid.appendChild(cell);
+        }
+      }
+
+      // Gambar garis ilustrasi Tangga & Ular di SVG
+      const svg = document.getElementById('boardOverlaySvg');
+      let svgContent = '';
+
+      // Gambar Tangga (Hijau)
+      Object.entries(LADDERS).forEach(([startStr, end]) => {
+        const s = getCellCenterPercent(parseInt(startStr, 10));
+        const e = getCellCenterPercent(end);
+        const x1 = s.x * 10, y1 = s.y * 10, x2 = e.x * 10, y2 = e.y * 10;
+        svgContent += `
+          <line x1="${x1 - 12}" y1="${y1}" x2="${x2 - 12}" y2="${y2}" stroke="#059669" stroke-width="7" stroke-linecap="round" opacity="0.7" />
+          <line x1="${x1 + 12}" y1="${y1}" x2="${x2 + 12}" y2="${y2}" stroke="#059669" stroke-width="7" stroke-linecap="round" opacity="0.7" />
+          <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#34d399" stroke-width="18" stroke-dasharray="6,16" opacity="0.85" />
+        `;
+      });
+
+      // Gambar Ular (Merah Melengkung)
+      Object.entries(SNAKES).forEach(([headStr, tail]) => {
+        const h = getCellCenterPercent(parseInt(headStr, 10));
+        const t = getCellCenterPercent(tail);
+        const x1 = h.x * 10, y1 = h.y * 10, x2 = t.x * 10, y2 = t.y * 10;
+        const cx = (x1 + x2) / 2 + 45;
+        const cy = (y1 + y2) / 2;
+        svgContent += `
+          <path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" fill="none" stroke="#e11d48" stroke-width="11" stroke-linecap="round" opacity="0.65" />
+          <circle cx="${x1}" cy="${y1}" r="14" fill="#be123c" opacity="0.85" />
+        `;
+      });
+
+      svg.innerHTML = svgContent;
+    }
+
+    // Render bidak pemain di atas papan
+    function renderPawns() {
+      const layer = document.getElementById('pawnsLayer');
+      layer.innerHTML = '';
+
+      const offsets = [
+        { dx: -1.8, dy: -1.8 },
+        { dx: 1.8, dy: -1.8 },
+        { dx: -1.8, dy: 1.8 },
+        { dx: 1.8, dy: 1.8 }
+      ];
+
+      gameState.players.forEach((p, idx) => {
+        const center = getCellCenterPercent(p.position);
+        const off = offsets[idx % offsets.length];
+        const pawn = document.createElement('div');
+        pawn.className = `pawn absolute w-7 h-7 sm:w-9 sm:h-9 -ml-3.5 -mt-3.5 sm:-ml-4.5 sm:-mt-4.5 rounded-full ${p.theme.bg} text-white border-2 border-white flex items-center justify-center text-sm sm:text-base font-bold`;
+        pawn.style.left = `${center.x + off.dx}%`;
+        pawn.style.top = `${center.y + off.dy}%`;
+        pawn.title = `${p.name} (Kotak ${p.position})`;
+        pawn.textContent = p.theme.avatar;
+        layer.appendChild(pawn);
+      });
+    }
+
+    /*************************************************************************
+     * BAGIAN 5: KONTROL SETUP & ALUR GILIRAN PERMAINAN
+     *************************************************************************/
+    function updateFilteredCountPreview() {
+      const k = document.getElementById('cfgKelas').value;
+      const m = document.getElementById('cfgMapel').value;
+      const t = document.getElementById('cfgTingkat').value;
+
+      const count = masterQuestionBank.filter(q => {
+        const mk = k === 'ALL' || String(q.kelas) === k;
+        const mm = m === 'ALL' || q.mapel === m;
+        const mt = t === 'ALL' || q.tingkat === t;
+        return mk && mm && mt;
+      }).length;
+
+      document.getElementById('filteredStockCount').textContent = count;
+    }
+
+    function renderPlayerNameInputs() {
+      const container = document.getElementById('playerNamesContainer');
+      container.innerHTML = '';
+
+      // Mode khusus 4 siswa: Pemain 1, Pemain 2, Pemain 3, Pemain 4
+      for (let idx = 0; idx < 4; idx++) {
+        const theme = PLAYER_THEMES[idx];
+        const div = document.createElement('div');
+        div.className = `p-3.5 rounded-2xl border-2 ${theme.light} border-slate-200 flex items-center gap-3`;
+        div.innerHTML = `
+          <span class="w-11 h-11 rounded-2xl ${theme.bg} text-white flex items-center justify-center text-xl shadow-sm shrink-0">${theme.avatar}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-extrabold ${theme.text}">Pemain ${idx + 1}</label>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/80 text-slate-600">${theme.colorName}</span>
+            </div>
+            <input type="text" data-player-idx="${idx}" placeholder="Nama Siswa ${idx + 1}" value="Siswa ${idx + 1}" class="player-name-input w-full bg-white px-2.5 py-1.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" />
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function startNewGameSession() {
+      const kelas = document.getElementById('cfgKelas').value;
+      const mapel = document.getElementById('cfgMapel').value;
+      const tingkat = document.getElementById('cfgTingkat').value;
+
+      const availableCount = SessionQuizEngine.initSession(kelas, mapel, tingkat);
+
+      if (availableCount === 0) {
+        showSystemDialog(
+          '📭',
+          'Soal Tidak Ditemukan',
+          'Tidak ada soal yang sesuai dengan kombinasi filter Kelas, Mata Pelajaran, dan Tingkat Kesulitan yang dipilih. Silakan ubah filter.',
+          [{ label: 'Ubah Pengaturan', primary: true, action: () => closeModal('systemDialogModal') }]
+        );
+        return;
+      }
+
+      // Siapkan tepat 4 siswa (Pemain 1 s/d Pemain 4) di posisi awal petak 1
+      const inputs = document.querySelectorAll('.player-name-input');
+      const players = [];
+      for (let idx = 0; idx < 4; idx++) {
+        const inp = inputs[idx];
+        const rawName = (inp && inp.value.trim()) ? inp.value.trim() : `Siswa ${idx + 1}`;
+        players.push({
+          id: idx,
+          turnNumber: idx + 1,
+          name: rawName,
+          position: 1,
+          score: 0,
+          correctCount: 0,
+          wrongCount: 0,
+          theme: PLAYER_THEMES[idx]
+        });
+      }
+
+      gameState = {
+        active: true,
+        players,
+        currentPlayerIndex: 0, // Mulai dari Pemain 1 (indeks 0)
+        pendingDiceRoll: 0,
+        activeQuestion: null,
+        lastAnswerCorrect: false,
+        isAnimating: false
+      };
+
+      // Update label filter sesi
+      const kelasLabel = kelas === 'ALL' ? 'Semua Kelas' : `Kelas ${kelas} SD`;
+      const mapelLabel = mapel === 'ALL' ? 'Semua Mapel' : mapel;
+      document.getElementById('badgeSessionFilter').textContent = `4 Siswa • ${kelasLabel} • ${mapelLabel}`;
+
+      document.getElementById('setupPanel').classList.add('hidden');
+      document.getElementById('arenaPanel').classList.remove('hidden');
+
+      renderBoard();
+      renderPawns();
+      updateArenaUI();
+    }
+
+    function confirmRestartSession() {
+      showSystemDialog(
+        '🔄',
+        'Mulai Ulang Permainan?',
+        'Memulai ulang akan mereset posisi papan, skor pemain, dan membuat antrean soal acak yang baru.',
+        [
+          { label: 'Batal', primary: false, action: () => closeModal('systemDialogModal') },
+          {
+            label: 'Ya, Reset & Atur Ulang',
+            primary: true,
+            action: () => {
+              closeModal('systemDialogModal');
+              gameState.active = false;
+              document.getElementById('arenaPanel').classList.add('hidden');
+              document.getElementById('setupPanel').classList.remove('hidden');
+              updateFilteredCountPreview();
+            }
+          }
+        ]
+      );
+    }
+
+    function updateArenaUI() {
+      const current = gameState.players[gameState.currentPlayerIndex];
+      const remaining = SessionQuizEngine.getRemainingCount();
+
+      document.getElementById('badgeRemainingPool').textContent = `Sisa Antrean: ${remaining} Soal`;
+      document.getElementById('activePlayerAvatar').textContent = current.theme.avatar;
+      document.getElementById('activePlayerName').textContent = `Pemain ${current.turnNumber}: ${current.name}`;
+      document.getElementById('activePlayerPosText').textContent = `Pion ${current.theme.colorName} • Petak ${current.position} • Skor: ${current.score}`;
+      document.getElementById('activeTurnBadge').textContent = `Giliran ${current.turnNumber}/4 🎯`;
+
+      const rollBtn = document.getElementById('rollDiceBtn');
+      rollBtn.disabled = gameState.isAnimating;
+      document.getElementById('turnInstructionText').textContent =
+        `Giliran Pemain ${current.turnNumber} (${current.name}): Lempar dadu dan jawab 1 soal unik untuk melangkah!`;
+
+      // Render klasemen 4 siswa
+      const sb = document.getElementById('scoreboardList');
+      sb.innerHTML = gameState.players.map((p, idx) => {
+        const isCurrent = idx === gameState.currentPlayerIndex;
+        return `
+          <div class="p-3 rounded-2xl border ${isCurrent ? 'border-sky-500 bg-sky-50/70 shadow-sm' : 'border-slate-200 bg-slate-50/50'} flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-9 h-9 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-base shadow-sm">${p.theme.avatar}</span>
+              <div>
+                <div class="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                  <span class="text-xs font-extrabold ${p.theme.text}">P${p.turnNumber}</span>
+                  <span>${p.name}</span>
+                  ${isCurrent ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-600 text-white">GILIRAN</span>' : ''}
+                </div>
+                <div class="text-[11px] text-slate-500">Benar: ${p.correctCount} • Salah: ${p.wrongCount}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-display font-bold text-base text-indigo-700">Petak ${p.position}</div>
+              <div class="text-[11px] font-bold text-slate-500">${p.score} pts</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render riwayat ID soal yang sudah terpakai
+      const usedCount = SessionQuizEngine.usedQuestionIds.size;
+      document.getElementById('usedCountBadge').textContent = `${usedCount} Terpakai`;
+      const logBox = document.getElementById('usedQuestionsLog');
+      if (SessionQuizEngine.historyLog.length === 0) {
+        logBox.innerHTML = '<div class="text-slate-400 italic py-2 text-center">Belum ada soal yang ditampilkan pada sesi ini.</div>';
+      } else {
+        logBox.innerHTML = SessionQuizEngine.historyLog.map(item => `
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/70">
+            <div>
+              <span class="font-mono font-bold text-indigo-700">${item.id}</span>
+              <span class="text-slate-500">• ${item.player}</span>
+            </div>
+            <span class="font-semibold text-[11px]">${item.status}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Lempar Dadu & Ambil 1 Soal dari Antrean Sesi Tunggal
+    function handleRollDice() {
+      if (!gameState.active || gameState.isAnimating) return;
+
+      const current = gameState.players[gameState.currentPlayerIndex];
+
+      // Cek apakah bank soal sesi sudah habis sebelum melempar dadu
+      if (SessionQuizEngine.getRemainingCount() === 0) {
+        handleBankSoalHabis();
+        return;
+      }
+
+      gameState.isAnimating = true;
+      updateArenaUI();
+      AudioEngine.dice();
+
+      const diceBox = document.getElementById('diceBox');
+      diceBox.classList.add('rolling');
+
+      let ticks = 0;
+      const interval = setInterval(() => {
+        diceBox.textContent = Math.floor(Math.random() * 6) + 1;
+        ticks++;
+        if (ticks >= 8) {
+          clearInterval(interval);
+          diceBox.classList.remove('rolling');
+          const finalDice = Math.floor(Math.random() * 6) + 1;
+          diceBox.textContent = finalDice;
+          gameState.pendingDiceRoll = finalDice;
+
+          // Ambil 1 soal unik dari antrean sesi
+          const question = SessionQuizEngine.drawNextQuestion(current.name);
+          updateArenaUI();
+
+          if (!question) {
+            gameState.isAnimating = false;
+            handleBankSoalHabis();
+            return;
+          }
+
+          gameState.activeQuestion = question;
+          openQuizModal(question, current);
+        }
+      }, 65);
+    }
+
+    function openQuizModal(question, player) {
+      document.getElementById('qModalIdBadge').textContent = `ID: ${question.id}`;
+      document.getElementById('qModalMetaBadge').textContent = `Kelas ${question.kelas} • ${question.mapel}`;
+      document.getElementById('qModalPlayerBadge').textContent = `Pemain ${player.turnNumber}: ${player.name} (Dadu: ${gameState.pendingDiceRoll})`;
+      document.getElementById('qModalMateri').textContent = `Materi: ${question.materi || 'Umum'}`;
+      document.getElementById('qModalTingkat').textContent = `Tingkat: ${question.tingkat}`;
+      document.getElementById('qModalQuestionText').textContent = question.pertanyaan;
+
+      const feedbackBox = document.getElementById('qModalFeedbackBox');
+      feedbackBox.classList.add('hidden');
+
+      const optionsGrid = document.getElementById('qModalOptionsGrid');
+      const labels = ['A', 'B', 'C', 'D'];
+      optionsGrid.innerHTML = question.shuffledPilihan.map((optText, idx) => `
+        <button
+          id="optBtn-${idx}"
+          onclick="submitQuizAnswer(${idx})"
+          class="quiz-opt-btn text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition flex items-start gap-3 cursor-pointer disabled:cursor-default"
+        >
+          <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">${labels[idx]}</span>
+          <span class="text-sm font-semibold text-slate-800 pt-0.5">${optText}</span>
+        </button>
+      `).join('');
+
+      document.getElementById('quizModal').classList.remove('hidden');
+    }
+
+    function submitQuizAnswer(selectedIdx) {
+      const q = gameState.activeQuestion;
+      if (!q) return;
+
+      // Kunci semua tombol pilihan agar jawaban tidak bisa diubah
+      const allBtns = document.querySelectorAll('.quiz-opt-btn');
+      allBtns.forEach(btn => btn.disabled = true);
+
+      const isCorrect = selectedIdx === q.shuffledJawaban;
+      gameState.lastAnswerCorrect = isCorrect;
+
+      // Perbarui status log riwayat anti-pengulangan
+      SessionQuizEngine.updateLastHistoryStatus(q.id, isCorrect);
+      updateArenaUI();
+
+      // Sorot tombol benar & salah
+      const labels = ['A', 'B', 'C', 'D'];
+      allBtns.forEach((btn, idx) => {
+        if (idx === q.shuffledJawaban) {
+          btn.classList.remove('border-slate-200');
+          btn.classList.add('border-emerald-500', 'bg-emerald-50');
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.classList.remove('border-slate-200');
+          btn.classList.add('border-rose-500', 'bg-rose-50');
+        }
+      });
+
+      const feedbackBox = document.getElementById('qModalFeedbackBox');
+      feedbackBox.classList.remove('hidden', 'border-emerald-300', 'bg-emerald-50/70', 'border-rose-300', 'bg-rose-50/70');
+
+      const current = gameState.players[gameState.currentPlayerIndex];
+
+      if (isCorrect) {
+        AudioEngine.correct();
+        feedbackBox.classList.add('border-emerald-300', 'bg-emerald-50/70');
+        document.getElementById('qFeedbackIcon').textContent = '🎉';
+        document.getElementById('qFeedbackTitle').textContent = `BENAR! ${current.name} melangkah +${gameState.pendingDiceRoll} kotak!`;
+        document.getElementById('qFeedbackTitle').className = 'font-display font-bold text-lg text-emerald-800';
+      } else {
+        AudioEngine.wrong();
+        feedbackBox.classList.add('border-rose-300', 'bg-rose-50/70');
+        document.getElementById('qFeedbackIcon').textContent = '💡';
+        document.getElementById('qFeedbackTitle').textContent = `SALAH! ${current.name} tetap di kotak ${current.position}.`;
+        document.getElementById('qFeedbackTitle').className = 'font-display font-bold text-lg text-rose-800';
+      }
+
+      document.getElementById('qFeedbackCorrectAnswer').textContent =
+        `Kunci Jawaban: ${labels[q.shuffledJawaban]}. ${q.shuffledPilihan[q.shuffledJawaban]}`;
+      document.getElementById('qFeedbackExplanation').textContent = `Pembahasan: ${q.pembahasan}`;
+
+      document.getElementById('qContinueBtn').textContent = isCorrect
+        ? `Majukan Bidak +${gameState.pendingDiceRoll} Petak ➡️`
+        : 'Tutup & Lanjut Giliran Berikutnya ➡️';
+    }
+
+    function buildFourPlayersRankingHtml(winnerId = null) {
+      const ranked = [...gameState.players].sort((a, b) => {
+        if (a.id === winnerId) return -1;
+        if (b.id === winnerId) return 1;
+        if (b.position !== a.position) return b.position - a.position;
+        if (b.score !== a.score) return b.score - a.score;
+        return b.correctCount - a.correctCount;
+      });
+
+      const medals = ['🥇 Juara 1', '🥈 Juara 2', '🥉 Juara 3', '🏅 Peringkat 4'];
+      return `
+        <div class="mt-3 space-y-2 text-left">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500 text-center mb-1">Peringkat Akhir 4 Siswa</div>
+          ${ranked.map((p, idx) => `
+            <div class="flex items-center justify-between p-2.5 rounded-2xl border ${idx === 0 ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'}">
+              <div class="flex items-center gap-2.5">
+                <span class="text-xs font-extrabold px-2 py-1 rounded-lg ${idx === 0 ? 'bg-amber-400 text-slate-950' : 'bg-slate-200 text-slate-700'}">${medals[idx]}</span>
+                <span class="w-7 h-7 rounded-full ${p.theme.bg} text-white flex items-center justify-center text-sm">${p.theme.avatar}</span>
+                <div>
+                  <div class="font-bold text-sm text-slate-900">Pemain ${p.turnNumber}: ${p.name}</div>
+                  <div class="text-[11px] text-slate-500">Benar: ${p.correctCount} • Salah: ${p.wrongCount}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-display font-bold text-sm text-indigo-700">Petak ${p.position}</div>
+                <div class="text-[11px] font-bold text-slate-600">${p.score} pts</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function finalizeQuizTurn() {
+      closeModal('quizModal');
+      const current = gameState.players[gameState.currentPlayerIndex];
+
+      if (gameState.lastAnswerCorrect) {
+        current.correctCount += 1;
+        current.score += 10;
+        let targetPos = current.position + gameState.pendingDiceRoll;
+        if (targetPos > 100) {
+          // Pantulan jika melebihi 100
+          targetPos = 100 - (targetPos - 100);
+        }
+        current.position = targetPos;
+        renderPawns();
+        updateArenaUI();
+
+        // Cek Tangga atau Ular setelah 450ms
+        setTimeout(() => {
+          if (LADDERS[current.position]) {
+            AudioEngine.ladder();
+            current.position = LADDERS[current.position];
+            current.score += 5;
+            renderPawns();
+            updateArenaUI();
+          } else if (SNAKES[current.position]) {
+            AudioEngine.snake();
+            current.position = SNAKES[current.position];
+            renderPawns();
+            updateArenaUI();
+          }
+
+          // Cek Kemenangan (Siswa pertama yang mencapai petak 100)
+          if (current.position === 100) {
+            AudioEngine.win();
+            gameState.active = false;
+            gameState.isAnimating = false;
+            const rankingHtml = buildFourPlayersRankingHtml(current.id);
+            showSystemDialog(
+              '🏆',
+              `PEMENANG: ${current.name.toUpperCase()}!`,
+              `Pemain ${current.turnNumber} (${current.name}) menjadi siswa pertama yang mencapai Petak 100!${rankingHtml}`,
+              [
+                {
+                  label: 'Main Lagi (Sesi Soal Baru)',
+                  primary: true,
+                  action: () => {
+                    closeModal('systemDialogModal');
+                    startNewGameSession();
+                  }
+                },
+                {
+                  label: 'Kembali ke Pengaturan',
+                  primary: false,
+                  action: () => {
+                    closeModal('systemDialogModal');
+                    document.getElementById('arenaPanel').classList.add('hidden');
+                    document.getElementById('setupPanel').classList.remove('hidden');
+                  }
+                }
+              ],
+              true
+            );
+            return;
+          }
+
+          advanceToNextPlayer();
+        }, 500);
+      } else {
+        current.wrongCount += 1;
+        advanceToNextPlayer();
+      }
+    }
+
+    function advanceToNextPlayer() {
+      gameState.activeQuestion = null;
+      gameState.isAnimating = false;
+
+      // Jika antrean soal habis tepat setelah giliran ini, langsung beritahu
+      if (SessionQuizEngine.getRemainingCount() === 0) {
+        updateArenaUI();
+        handleBankSoalHabis();
+        return;
+      }
+
+      // Rotasi giliran berurutan: Pemain 1 (0) -> Pemain 2 (1) -> Pemain 3 (2) -> Pemain 4 (3) -> kembali ke Pemain 1 (0)
+      gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % 4;
+      updateArenaUI();
+    }
+
+    // Handler Wajib Saat Bank Soal Sesi Habis (Dilarang Mengulang Soal Diam-Diam)
+    function handleBankSoalHabis() {
+      gameState.active = false;
+      gameState.isAnimating = false;
+
+      const rankingHtml = buildFourPlayersRankingHtml(null);
+
+      showSystemDialog(
+        '🛑',
+        'BANK SOAL HABIS',
+        `Seluruh ${SessionQuizEngine.totalInitialCount} soal unik dalam bank soal bersama telah digunakan! Soal tidak akan diulang kembali.${rankingHtml}`,
+        [
+          {
+            label: '🔄 Mulai Sesi Baru (Acak Ulang)',
+            primary: true,
+            action: () => {
+              closeModal('systemDialogModal');
+              startNewGameSession();
+            }
+          },
+          {
+            label: '🏁 Akhiri Permainan',
+            primary: false,
+            action: () => {
+              closeModal('systemDialogModal');
+              document.getElementById('arenaPanel').classList.add('hidden');
+              document.getElementById('setupPanel').classList.remove('hidden');
+            }
+          }
+        ],
+        true
+      );
+    }
+
+    /*************************************************************************
+     * BAGIAN 6: HALAMAN GURU (CRUD, PENCARIAN, DETEKSI DUPLIKASI & JSON)
+     *************************************************************************/
+    function switchView(viewName) {
+      const viewGame = document.getElementById('viewGame');
+      const viewTeacher = document.getElementById('viewTeacher');
+      const btnGame = document.getElementById('navGameBtn');
+      const btnTeacher = document.getElementById('navTeacherBtn');
+
+      if (viewName === 'game') {
+        viewGame.classList.remove('hidden');
+        viewTeacher.classList.add('hidden');
+        btnGame.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer';
+        btnTeacher.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5';
+        updateFilteredCountPreview();
+      } else {
+        viewGame.classList.add('hidden');
+        viewTeacher.classList.remove('hidden');
+        btnTeacher.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer flex items-center gap-1.5';
+        btnGame.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer';
+        renderTeacherStats();
+        renderTeacherTable();
+      }
+    }
+
+    function renderTeacherStats() {
+      const grid = document.getElementById('teacherStatsGrid');
+      let html = '';
+      for (let k = 1; k <= 6; k++) {
+        const count = masterQuestionBank.filter(q => q.kelas === k).length;
+        html += `
+          <div class="p-3 rounded-2xl bg-sky-50/80 border border-sky-100 text-center">
+            <div class="text-xs font-bold text-slate-500">Kelas ${k} SD</div>
+            <div class="font-display font-bold text-xl text-sky-700">${count} Soal</div>
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
+    }
+
+    function renderTeacherTable() {
+      const keyword = document.getElementById('tSearchInput').value.toLowerCase().trim();
+      const fKelas = document.getElementById('tFilterKelas').value;
+      const fMapel = document.getElementById('tFilterMapel').value;
+      const fTingkat = document.getElementById('tFilterTingkat').value;
+
+      const filtered = masterQuestionBank.filter(q => {
+        const mk = fKelas === 'ALL' || String(q.kelas) === fKelas;
+        const mm = fMapel === 'ALL' || q.mapel === fMapel;
+        const mt = fTingkat === 'ALL' || q.tingkat === fTingkat;
+        const mSearch = !keyword ||
+          q.id.toLowerCase().includes(keyword) ||
+          q.pertanyaan.toLowerCase().includes(keyword) ||
+          (q.materi && q.materi.toLowerCase().includes(keyword));
+        return mk && mm && mt && mSearch;
+      });
+
+      const tbody = document.getElementById('teacherTableBody');
+      const labels = ['A', 'B', 'C', 'D'];
+      const displaySlice = filtered.slice(0, 100); // Render maksimal 100 baris agar tetap super cepat
+
+      tbody.innerHTML = displaySlice.map(q => `
+        <tr class="hover:bg-slate-50/80 align-top">
+          <td class="p-3 font-mono text-xs font-bold text-indigo-700 whitespace-nowrap">
+            ${q.id}
+            ${q.isCustom ? '<span class="block mt-1 px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-800 rounded w-fit">Guru</span>' : ''}
+          </td>
+          <td class="p-3 whitespace-nowrap">
+            <div class="font-bold text-slate-800">Kelas ${q.kelas}</div>
+            <div class="text-xs text-slate-600">${q.mapel}</div>
+            <span class="inline-block mt-1 px-2 py-0.5 text-[11px] rounded bg-slate-100 font-semibold text-slate-700">${q.tingkat}</span>
+          </td>
+          <td class="p-3 max-w-md">
+            <div class="font-semibold text-slate-900 mb-1.5">${q.pertanyaan}</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-slate-600">
+              ${q.pilihan.map((opt, i) => `
+                <div class="${i === q.jawaban ? 'font-bold text-emerald-700' : ''}">${labels[i]}. ${opt}</div>
+              `).join('')}
+            </div>
+          </td>
+          <td class="p-3 max-w-xs text-xs">
+            <div class="font-bold text-emerald-700 mb-1">Kunci: ${labels[q.jawaban]}</div>
+            <p class="text-slate-600">${q.pembahasan}</p>
+          </td>
+          <td class="p-3 text-center whitespace-nowrap space-x-1">
+            <button onclick="openQuestionFormModal('${q.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold cursor-pointer">Edit</button>
+            <button onclick="deleteTeacherQuestion('${q.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold cursor-pointer">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('teacherShowingText').textContent =
+        `Menampilkan ${displaySlice.length} dari ${filtered.length} soal terfilter (Total Bank Soal: ${masterQuestionBank.length})`;
+    }
+
+    // Deteksi kemiripan teks pertanyaan untuk mencegah duplikasi
+    function findSimilarQuestion(text, ignoreId = '') {
+      const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+      if (normalized.length < 8) return null;
+
+      for (const q of masterQuestionBank) {
+        if (ignoreId && q.id === ignoreId) continue;
+        const qNorm = q.pertanyaan.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+        if (qNorm === normalized) return q;
+
+        // Cek kemiripan kata (Jaccard similarity sederhana)
+        const setA = new Set(normalized.split(/\s+/));
+        const setB = new Set(qNorm.split(/\s+/));
+        let intersection = 0;
+        setA.forEach(w => { if (setB.has(w)) intersection++; });
+        const union = new Set([...setA, ...setB]).size;
+        if (union > 0 && (intersection / union) >= 0.82) {
+          return q;
+        }
+      }
+      return null;
+    }
+
+    function checkDuplicateWarningLive() {
+      const text = document.getElementById('fPertanyaan').value;
+      const ignoreId = document.getElementById('editQuestionOriginalId').value;
+      const similar = findSimilarQuestion(text, ignoreId);
+      const banner = document.getElementById('duplicateWarningBanner');
+      if (similar) {
+        banner.classList.remove('hidden');
+        banner.textContent = `⚠️ Peringatan Duplikasi: Pertanyaan mirip dengan soal [${similar.id}]: "${similar.pertanyaan}"`;
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function openQuestionFormModal(editId = '') {
+      document.getElementById('duplicateWarningBanner').classList.add('hidden');
+      document.getElementById('editQuestionOriginalId').value = editId;
+
+      if (editId) {
+        const q = masterQuestionBank.find(item => item.id === editId);
+        if (!q) return;
+        document.getElementById('tFormModalTitle').textContent = `Edit Soal [${q.id}]`;
+        document.getElementById('fKelas').value = q.kelas;
+        document.getElementById('fMapel').value = q.mapel;
+        document.getElementById('fTingkat').value = q.tingkat;
+        document.getElementById('fId').value = q.id;
+        document.getElementById('fId').readOnly = true;
+        document.getElementById('fMateri').value = q.materi || '';
+        document.getElementById('fPertanyaan').value = q.pertanyaan;
+        document.getElementById('fOpt0').value = q.pilihan[0];
+        document.getElementById('fOpt1').value = q.pilihan[1];
+        document.getElementById('fOpt2').value = q.pilihan[2];
+        document.getElementById('fOpt3').value = q.pilihan[3];
+        document.getElementById('fJawaban').value = q.jawaban;
+        document.getElementById('fPembahasan').value = q.pembahasan;
+      } else {
+        document.getElementById('tFormModalTitle').textContent = 'Tambah Soal Baru';
+        document.getElementById('fKelas').value = 4;
+        document.getElementById('fMapel').value = 'Matematika';
+        document.getElementById('fTingkat').value = 'Mudah';
+        document.getElementById('fId').value = `GURU-${Date.now().toString().slice(-5)}`;
+        document.getElementById('fId').readOnly = false;
+        document.getElementById('fMateri').value = '';
+        document.getElementById('fPertanyaan').value = '';
+        document.getElementById('fOpt0').value = '';
+        document.getElementById('fOpt1').value = '';
+        document.getElementById('fOpt2').value = '';
+        document.getElementById('fOpt3').value = '';
+        document.getElementById('fJawaban').value = 0;
+        document.getElementById('fPembahasan').value = '';
+      }
+
+      document.getElementById('teacherFormModal').classList.remove('hidden');
+    }
+
+    function saveTeacherQuestion(forceSave = false) {
+      const originalId = document.getElementById('editQuestionOriginalId').value;
+      const id = document.getElementById('fId').value.trim();
+      const kelas = parseInt(document.getElementById('fKelas').value, 10);
+      const mapel = document.getElementById('fMapel').value;
+      const tingkat = document.getElementById('fTingkat').value;
+      const materi = document.getElementById('fMateri').value.trim() || 'Materi Umum';
+      const pertanyaan = document.getElementById('fPertanyaan').value.trim();
+      const pilihan = [
+        document.getElementById('fOpt0').value.trim(),
+        document.getElementById('fOpt1').value.trim(),
+        document.getElementById('fOpt2').value.trim(),
+        document.getElementById('fOpt3').value.trim()
+      ];
+      const jawaban = parseInt(document.getElementById('fJawaban').value, 10);
+      const pembahasan = document.getElementById('fPembahasan').value.trim() || 'Jawaban sesuai materi pembelajaran.';
+
+      if (!id || !pertanyaan || pilihan.some(p => !p)) {
+        showSystemDialog('⚠️', 'Data Belum Lengkap', 'Pastikan ID Soal, Pertanyaan, dan keempat pilihan jawaban (A, B, C, D) telah diisi.', [
+          { label: 'Oke, Lengkapi', primary: true, action: () => closeModal('systemDialogModal') }
+        ]);
+        return;
+      }
+
+      // Cek keunikan ID saat menambah soal baru
+      if (!originalId && masterQuestionBank.some(q => q.id === id)) {
+        showSystemDialog('🚫', 'ID Soal Sudah Terpakai', `ID "${id}" sudah ada di dalam database. Gunakan ID unik lainnya.`, [
+          { label: 'Ganti ID', primary: true, action: () => closeModal('systemDialogModal') }
+        ]);
+        return;
+      }
+
+      // Peringatan duplikasi sebelum disimpan
+      if (!forceSave) {
+        const similar = findSimilarQuestion(pertanyaan, originalId);
+        if (similar) {
+          showSystemDialog(
+            '⚠️',
+            'Peringatan Duplikasi Soal',
+            `Pertanyaan ini sangat mirip dengan soal [${similar.id}]: "${similar.pertanyaan}". Apakah Anda tetap ingin menyimpannya?`,
+            [
+              { label: 'Batal & Perbaiki', primary: false, action: () => closeModal('systemDialogModal') },
+              {
+                label: 'Tetap Simpan',
+                primary: true,
+                action: () => {
+                  closeModal('systemDialogModal');
+                  saveTeacherQuestion(true);
+                }
+              }
+            ]
+          );
+          return;
+        }
+      }
+
+      const newObj = {
+        id,
+        kelas,
+        mapel,
+        materi,
+        tingkat,
+        pertanyaan,
+        pilihan,
+        jawaban,
+        pembahasan,
+        isCustom: true
+      };
+
+      if (originalId) {
+        const idx = masterQuestionBank.findIndex(q => q.id === originalId);
+        if (idx !== -1) masterQuestionBank[idx] = newObj;
+      } else {
+        masterQuestionBank.unshift(newObj);
+      }
+
+      saveCustomQuestionsToStorage();
+      closeModal('teacherFormModal');
+      renderTeacherStats();
+      renderTeacherTable();
+    }
+
+    function deleteTeacherQuestion(id) {
+      showSystemDialog(
+        '🗑️',
+        'Hapus Soal?',
+        `Apakah Anda yakin ingin menghapus soal dengan ID [${id}] dari daftar aktif?`,
+        [
+          { label: 'Batal', primary: false, action: () => closeModal('systemDialogModal') },
+          {
+            label: 'Ya, Hapus',
+            primary: true,
+            action: () => {
+              masterQuestionBank = masterQuestionBank.filter(q => q.id !== id);
+              saveCustomQuestionsToStorage();
+              closeModal('systemDialogModal');
+              renderTeacherStats();
+              renderTeacherTable();
+            }
+          }
+        ]
+      );
+    }
+
+    function resetCustomQuestions() {
+      showSystemDialog(
+        '🔄',
+        'Reset Tambahan Guru?',
+        'Semua soal tambahan atau perubahan dari guru akan dihapus dan dikembalikan ke 300 soal bawaan SDN Kesilir 02. Lanjutkan?',
+        [
+          { label: 'Batal', primary: false, action: () => closeModal('systemDialogModal') },
+          {
+            label: 'Ya, Reset ke 300 Soal',
+            primary: true,
+            action: () => {
+              localStorage.removeItem(STORAGE_KEY);
+              loadMasterBank();
+              renderTeacherStats();
+              renderTeacherTable();
+              showSystemDialog('✅', 'Bank Soal Dipulihkan', 'Bank soal telah dikembalikan ke 300 soal bawaan asli SDN Kesilir 02.', [
+                { label: 'Tutup', primary: true, action: () => closeModal('systemDialogModal') }
+              ]);
+            }
+          }
+        ]
+      );
+    }
+
+    function openImportJsonModal() {
+      document.getElementById('jsonImportTextarea').value = '';
+      document.getElementById('importJsonModal').classList.remove('hidden');
+    }
+
+    function processJsonImport() {
+      const raw = document.getElementById('jsonImportTextarea').value.trim();
+      if (!raw) {
+        showSystemDialog('⚠️', 'Kolom JSON Kosong', 'Silakan tempelkan teks array JSON soal terlebih dahulu sebelum memproses impor.', [
+          { label: 'Oke', primary: true, action: () => closeModal('systemDialogModal') }
+        ]);
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error('Format harus berupa Array JSON [...]');
+
+        let added = 0;
+        let skippedDupId = 0;
+        let skippedSimilar = 0;
+
+        parsed.forEach((item, idx) => {
+          if (!item.pertanyaan || !Array.isArray(item.pilihan) || item.pilihan.length !== 4) return;
+          const id = item.id ? String(item.id).trim() : `IMP-${Date.now()}-${idx}`;
+          if (masterQuestionBank.some(q => q.id === id)) {
+            skippedDupId++;
+            return;
+          }
+          if (findSimilarQuestion(item.pertanyaan)) {
+            skippedSimilar++;
+            return;
+          }
+          masterQuestionBank.unshift({
+            id,
+            kelas: parseInt(item.kelas, 10) || 4,
+            mapel: item.mapel || 'Matematika',
+            materi: item.materi || 'Materi Impor',
+            tingkat: item.tingkat || 'Sedang',
+            pertanyaan: String(item.pertanyaan).trim(),
+            pilihan: item.pilihan.map(String),
+            jawaban: typeof item.jawaban === 'number' ? item.jawaban : 0,
+            pembahasan: item.pembahasan || 'Pembahasan sesuai kunci jawaban.',
+            isCustom: true
+          });
+          added++;
+        });
+
+        saveCustomQuestionsToStorage();
+        closeModal('importJsonModal');
+        renderTeacherStats();
+        renderTeacherTable();
+
+        showSystemDialog(
+          '📥',
+          'Hasil Impor JSON',
+          `Berhasil menambahkan ${added} soal baru. Dilewati karena ID duplikat: ${skippedDupId}, dilewati karena pertanyaan mirip: ${skippedSimilar}.`,
+          [{ label: 'Selesai', primary: true, action: () => closeModal('systemDialogModal') }]
+        );
+      } catch (err) {
+        showSystemDialog('❌', 'Format JSON Tidak Valid', `Terjadi kesalahan pembacaan JSON: ${err.message}`, [
+          { label: 'Periksa Kembali', primary: true, action: () => closeModal('systemDialogModal') }
+        ]);
+      }
+    }
+
+    function exportBankJson() {
+      const dataStr = JSON.stringify(masterQuestionBank, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bank_soal_sdn_kesilir_02.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /*************************************************************************
+     * BAGIAN 7: UTILITAS DIALOG MODAL & INISIALISASI AWAL
+     *************************************************************************/
+    function showSystemDialog(icon, title, message, buttons, isHtml = false) {
+      document.getElementById('sysDialogIcon').textContent = icon;
+      document.getElementById('sysDialogTitle').textContent = title;
+      const msgEl = document.getElementById('sysDialogMessage');
+      if (isHtml) {
+        msgEl.innerHTML = message;
+      } else {
+        msgEl.textContent = message;
+      }
+
+      const actionsEl = document.getElementById('sysDialogActions');
+      actionsEl.innerHTML = '';
+      buttons.forEach(btn => {
+        const b = document.createElement('button');
+        b.className = btn.primary
+          ? 'px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow cursor-pointer'
+          : 'px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm cursor-pointer';
+        b.textContent = btn.label;
+        b.onclick = btn.action;
+        actionsEl.appendChild(b);
+      });
+
+      document.getElementById('systemDialogModal').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // Inisialisasi saat halaman dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+      loadMasterBank();
+      renderPlayerNameInputs();
+      updateFilteredCountPreview();
+      renderBoard();
+    });
+  </script>
+</body>
+</html>
+```
