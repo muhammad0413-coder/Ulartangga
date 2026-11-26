@@ -78,9 +78,30 @@
     .animate-pop {
       animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+    /* Mode Layar Penuh 1 Layar Utuh untuk IFP saat bermain */
+    body.game-fullscreen-mode {
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body.game-fullscreen-mode main {
+      flex: 1 1 0%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding-top: 0.4rem !important;
+      padding-bottom: 0.4rem !important;
+    }
+    body.game-fullscreen-mode #viewGame {
+      flex: 1 1 0%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
     /* Custom scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; rounded: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
     ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
     ::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
@@ -88,41 +109,41 @@
 <body class="text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900">
 
   <!-- HEADER UTAMA -->
-  <header class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-[1680px] mx-auto px-4 sm:px-6 xl:px-8 py-3 xl:py-4 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3 xl:gap-4">
-        <div class="w-11 h-11 xl:w-14 xl:h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-display font-bold text-xl xl:text-3xl shadow-md">
+  <header id="mainHeader" class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-30 shadow-sm shrink-0">
+    <div class="max-w-[1680px] mx-auto px-3 sm:px-5 xl:px-7 py-2 xl:py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 xl:gap-3.5">
+        <div class="w-9 h-9 xl:w-11 xl:h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center font-display font-bold text-lg xl:text-2xl shadow-md">
           🎲
         </div>
         <div>
-          <div class="flex items-center gap-2 xl:gap-3">
-            <h1 class="text-lg sm:text-xl xl:text-2xl font-bold text-slate-900 leading-tight">Ular Tangga Pintar</h1>
-            <span class="px-2.5 py-0.5 text-[11px] xl:text-xs font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">SDN KESILIR 02</span>
-            <span class="hidden lg:inline-block px-2.5 py-0.5 text-xs font-bold bg-sky-100 text-sky-800 rounded-full border border-sky-200">🖥️ Mode Layar IFP</span>
+          <div class="flex items-center gap-2 xl:gap-2.5">
+            <h1 class="text-base sm:text-lg xl:text-xl font-bold text-slate-900 leading-tight">Ular Tangga Pintar</h1>
+            <span class="px-2 py-0.5 text-[10px] xl:text-xs font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">SDN KESILIR 02</span>
+            <span class="hidden lg:inline-block px-2 py-0.5 text-xs font-bold bg-sky-100 text-sky-800 rounded-full border border-sky-200">🖥️ 1 Layar Full IFP</span>
           </div>
-          <p class="text-xs xl:text-sm text-slate-500">Petualangan Kuis Interaktif 4 Siswa • Sistem Anti-Pengulangan Soal</p>
+          <p class="hidden sm:block text-[11px] xl:text-xs text-slate-500">Petualangan Kuis Interaktif 4 Siswa • Sistem Anti-Pengulangan Soal</p>
         </div>
       </div>
 
-      <nav class="flex items-center gap-2.5 xl:gap-3">
-        <button id="navGameBtn" onclick="switchView('game')" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl text-sm xl:text-base font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
+      <nav class="flex items-center gap-2">
+        <button id="navGameBtn" onclick="switchView('game')" class="ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
           🎮 Arena Permainan
         </button>
-        <button id="navTeacherBtn" onclick="switchView('teacher')" class="ifp-touch-target px-4 py-2.5 xl:px-5 xl:py-3 rounded-xl text-sm xl:text-base font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-2">
+        <button id="navTeacherBtn" onclick="switchView('teacher')" class="ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5">
           <span>📚 Halaman Guru</span>
-          <span id="totalBankBadge" class="px-2 py-0.5 text-xs xl:text-sm bg-indigo-100 text-indigo-700 rounded-md font-bold">300</span>
+          <span id="totalBankBadge" class="px-1.5 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-md font-bold">300</span>
         </button>
       </nav>
     </div>
   </header>
 
   <!-- KONTEN UTAMA -->
-  <main class="max-w-[1680px] mx-auto px-4 sm:px-6 xl:px-8 py-5 xl:py-6">
+  <main class="w-full max-w-[1680px] mx-auto px-2.5 sm:px-5 xl:px-7 py-4">
 
     <!-- =========================================================
          VIEW 1: SETUP & ARENA PERMAINAN
     ========================================================== -->
-    <section id="viewGame" class="space-y-5 xl:space-y-6">
+    <section id="viewGame" class="space-y-4">
 
       <!-- PANEL PENGATURAN SESI BARU -->
       <div id="setupPanel" class="bg-white rounded-3xl p-5 sm:p-7 xl:p-9 shadow-lg border border-sky-100 animate-pop">
@@ -208,11 +229,11 @@
         </div>
       </div>
 
-      <!-- PANEL ARENA PERMAINAN (PAPAN UTAMA DI TENGAH + DADU KECIL & 4 KARTU SISWA DI BAWAH) -->
-      <div id="arenaPanel" class="hidden flex flex-col justify-between gap-2 sm:gap-2.5">
+      <!-- PANEL ARENA PERMAINAN (1 LAYAR FULL IFP TANPA SCROLL ATAS-BAWAH) -->
+      <div id="arenaPanel" class="hidden flex-1 min-h-0 flex flex-col justify-between gap-1.5 sm:gap-2 overflow-hidden">
 
         <!-- BAR STATUS RINGKAS DI ATAS PAPAN -->
-        <div class="bg-white/95 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-sm border border-sky-100 flex items-center justify-between gap-2 text-[11px] sm:text-xs xl:text-sm">
+        <div class="bg-white/95 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl shadow-xs border border-sky-100 flex items-center justify-between gap-2 text-[11px] sm:text-xs xl:text-sm shrink-0">
           <div class="flex items-center gap-2 min-w-0">
             <span id="badgeSessionFilter" class="px-2.5 py-0.5 rounded-lg bg-sky-100 text-sky-800 font-bold truncate">4 Siswa • Kelas 4 SD</span>
             <span id="usedCountBadge" class="hidden sm:inline-block px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold shrink-0">🛡️ 0 Terpakai</span>
@@ -222,52 +243,52 @@
           </button>
         </div>
 
-        <!-- BAGIAN TENGAH: PAPAN ULAR TANGGA UTAMA (DIPERBESAR MEMENUHI LAYAR IFP) -->
-        <div class="bg-white p-2 sm:p-3 xl:p-4 rounded-3xl shadow-lg border border-sky-100 w-full relative">
-          <!-- Banner Status Pergerakan Pion di Atas Papan -->
-          <div id="boardMoveBanner" class="hidden mb-2 px-4 py-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 text-white font-display font-bold text-xs sm:text-base xl:text-lg text-center shadow-md animate-pop">
+        <!-- BAGIAN TENGAH: PAPAN ULAR TANGGA UTAMA (OTOMATIS MENYESUAIKAN SISA TINGGI LAYAR) -->
+        <div id="boardCardWrapper" class="bg-white p-1.5 sm:p-2 xl:p-2.5 rounded-2xl shadow-md border border-sky-100 w-full flex-1 min-h-0 flex flex-col items-center justify-center relative overflow-hidden">
+          <!-- Banner Status Pergerakan Pion Mengambang di Atas Papan -->
+          <div id="boardMoveBanner" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-xl px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 text-white font-display font-bold text-xs sm:text-sm xl:text-base text-center shadow-lg animate-pop pointer-events-none">
             🦁 Siswa 1 melangkah maju!
           </div>
 
-          <div class="relative w-full max-w-[70vh] sm:max-w-[73vh] xl:max-w-[75vh] mx-auto rounded-2xl overflow-hidden border-2 xl:border-4 border-slate-800 shadow-inner bg-amber-50">
-            <div id="boardGrid" class="board-grid w-full"></div>
+          <div id="boardSquareContainer" class="relative aspect-square h-full max-h-full max-w-full mx-auto rounded-xl overflow-hidden border-2 xl:border-[3px] border-slate-800 shadow-inner bg-amber-50">
+            <div id="boardGrid" class="board-grid w-full h-full"></div>
             <!-- SVG Garis Ular & Tangga -->
             <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
             <!-- Layer Bidak Pemain -->
             <div id="pawnsLayer" class="absolute inset-0 w-full h-full pointer-events-none z-20"></div>
 
             <!-- OVERLAY DADU BESAR TRANSPARAN DI TENGAH PAPAN SAAT DILEMPAR -->
-            <div id="boardBigDiceOverlay" class="hidden absolute inset-0 z-30 bg-transparent pointer-events-none flex flex-col items-center justify-center p-4">
-              <div class="bg-white/60 backdrop-blur-[2px] px-6 py-4 sm:px-8 sm:py-5 rounded-3xl shadow-xl border-2 border-amber-400/80 text-center space-y-2 animate-pop">
+            <div id="boardBigDiceOverlay" class="hidden absolute inset-0 z-30 bg-transparent pointer-events-none flex flex-col items-center justify-center p-3">
+              <div class="bg-white/60 backdrop-blur-[2px] px-5 py-3 sm:px-7 sm:py-4 rounded-3xl shadow-xl border-2 border-amber-400/80 text-center space-y-1.5 animate-pop">
                 <div id="bigDicePlayerLabel" class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-indigo-900 drop-shadow-sm">Giliran Siswa 1</div>
-                <div id="diceBox" class="w-24 h-24 sm:w-32 sm:h-32 xl:w-36 xl:h-36 mx-auto rounded-3xl bg-amber-100/75 border-4 border-amber-500/85 shadow-lg flex items-center justify-center text-6xl sm:text-7xl xl:text-8xl font-display font-bold text-indigo-900 select-none">
+                <div id="diceBox" class="w-20 h-20 sm:w-28 sm:h-28 xl:w-32 xl:h-32 mx-auto rounded-3xl bg-amber-100/75 border-4 border-amber-500/85 shadow-lg flex items-center justify-center text-5xl sm:text-6xl xl:text-7xl font-display font-bold text-indigo-900 select-none">
                   🎲
                 </div>
-                <div id="bigDiceStatusText" class="text-xs sm:text-base font-extrabold text-slate-900 drop-shadow-sm">Mengocok dadu...</div>
+                <div id="bigDiceStatusText" class="text-xs sm:text-sm font-extrabold text-slate-900 drop-shadow-sm">Mengocok dadu...</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- BAGIAN BAWAH: BAR DADU KECIL DI ATAS + EMPAT KARTU SISWA HORIZONTAL DI PALING BAWAH -->
-        <div class="w-full space-y-2">
+        <div class="w-full space-y-1.5 shrink-0">
           <!-- Bar Kontrol Dadu Kecil Tepat di Atas Nama Siswa -->
-          <div class="bg-white/95 px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl shadow-sm border border-amber-200 flex items-center justify-between gap-2">
+          <div class="bg-white/95 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl shadow-xs border border-amber-200 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <span id="miniDiceTurnAvatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm sm:text-base shadow-sm shrink-0">🦁</span>
+              <span id="miniDiceTurnAvatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs sm:text-sm shadow-sm shrink-0">🦁</span>
               <div class="min-w-0">
                 <span id="miniDiceTurnText" class="font-display font-bold text-xs sm:text-sm xl:text-base text-slate-900 truncate block">Giliran Siswa 1</span>
               </div>
             </div>
 
-            <button id="rollDiceBtn" onclick="handleRollDice()" class="ifp-touch-target px-3.5 py-1.5 sm:px-5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 text-white font-display font-bold text-xs sm:text-sm xl:text-base shadow-md shadow-amber-500/25 flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0">
+            <button id="rollDiceBtn" onclick="handleRollDice()" class="ifp-touch-target px-3.5 py-1.5 sm:px-5 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:bg-slate-300 disabled:from-slate-300 disabled:to-slate-300 text-white font-display font-bold text-xs sm:text-sm xl:text-base shadow-md shadow-amber-500/25 flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0">
               <span id="miniDiceIcon" class="text-base sm:text-lg leading-none">🎲</span>
               <span>Lempar Dadu</span>
             </button>
           </div>
 
           <!-- Empat Kartu Siswa Sejajar Satu Baris Horizontal -->
-          <div id="scoreboardList" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));" class="gap-1.5 sm:gap-3 xl:gap-4 w-full"></div>
+          <div id="scoreboardList" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));" class="gap-1.5 sm:gap-2.5 xl:gap-3.5 w-full"></div>
         </div>
 
       </div>
@@ -551,29 +572,39 @@
   <!-- =========================================================
        MODAL 4: IMPOR JSON GURU
   ========================================================== -->
-  <div id="importJsonModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-pop">
+  <div id="importJsonModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 my-auto animate-pop">
       <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 class="font-display font-bold text-xl text-slate-900">Impor Soal via JSON</h3>
+        <div>
+          <h3 class="font-display font-bold text-xl text-slate-900">📥 Impor Soal via JSON</h3>
+          <p class="text-xs text-slate-500">Gunakan template di bawah ini agar struktur soal langsung terbaca otomatis.</p>
+        </div>
         <button onclick="closeModal('importJsonModal')" class="text-slate-400 hover:text-slate-700 font-bold text-xl cursor-pointer">✕</button>
       </div>
-      <p class="text-xs text-slate-600">Tempelkan array JSON soal sesuai format standar. Sistem otomatis memeriksa ID unik dan mendeteksi kemiripan pertanyaan.</p>
-      <textarea id="jsonImportTextarea" rows="7" class="w-full p-3 rounded-2xl border border-slate-300 font-mono text-xs bg-slate-50" placeholder='[
-  {
-    "id": "MTK4-IMP-01",
-    "kelas": 4,
-    "mapel": "Matematika",
-    "materi": "Perkalian",
-    "tingkat": "Mudah",
-    "pertanyaan": "Berapakah hasil dari 14 x 5?",
-    "pilihan": ["60", "65", "70", "75"],
-    "jawaban": 2,
-    "pembahasan": "14 dikali 5 sama dengan 70."
-  }
-]'></textarea>
-      <div class="flex justify-end gap-2">
-        <button onclick="closeModal('importJsonModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold cursor-pointer">Batal</button>
-        <button onclick="processJsonImport()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow cursor-pointer">Proses Impor</button>
+
+      <!-- Bar Aksi Template Cepat -->
+      <div class="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-bold text-indigo-900">Butuh contoh format siap pakai?</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="fillImportTemplate()" class="ifp-touch-target px-3 py-1.5 rounded-xl bg-white hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold shadow-xs transition cursor-pointer">
+            📋 Isi Template ke Kotak
+          </button>
+          <button type="button" onclick="downloadJsonTemplate()" class="ifp-touch-target px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition cursor-pointer">
+            ⬇️ Unduh Template (.json)
+          </button>
+        </div>
+      </div>
+
+      <!-- Panduan Singkat Kolom Template -->
+      <div class="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 leading-relaxed">
+        <strong>Keterangan Kolom:</strong> <code class="text-indigo-700 font-bold">jawaban</code> diisi indeks pilihan benar (<strong>0</strong> = A, <strong>1</strong> = B, <strong>2</strong> = C, <strong>3</strong> = D). Sistem otomatis memeriksa ID unik dan mencegah duplikasi pertanyaan.
+      </div>
+
+      <textarea id="jsonImportTextarea" rows="9" class="w-full p-3 rounded-2xl border border-slate-300 font-mono text-xs bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Klik 'Isi Template ke Kotak' di atas atau tempelkan data JSON soal Anda di sini..."></textarea>
+
+      <div class="flex justify-end gap-2 pt-1">
+        <button onclick="closeModal('importJsonModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold cursor-pointer">Batal</button>
+        <button onclick="processJsonImport()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow cursor-pointer">✅ Proses Impor Sekarang</button>
       </div>
     </div>
   </div>
@@ -1078,12 +1109,12 @@
     /*************************************************************************
      * BAGIAN 3: MESIN ANTI-PENGULANGAN SOAL (SESSION QUEUE + USED SET)
      * Menjamin 100% tidak ada ID soal yang muncul >1 kali dalam 1 sesi,
-     * baik untuk Pemain 1-4 maupun Bot AI, maupun saat jawaban salah.
+     * baik untuk Pemain 1-4 maupun saat jawaban salah.
      *************************************************************************/
     const SessionQuizEngine = {
-      sessionQueue: [],       // Antrean soal teracak untuk sesi ini
-      usedQuestionIds: new Set(), // Set ID soal yang SUDAH pernah tampil
-      historyLog: [],         // Riwayat tampilan untuk UI
+      sessionQueue: [],
+      usedQuestionIds: new Set(),
+      historyLog: [],
       totalInitialCount: 0,
 
       // Fisher-Yates Shuffle (Acak murni tanpa bias)
@@ -1125,10 +1156,9 @@
       // Ambil 1 soal berikutnya & LANGSUNG tandai terpakai (Anti-Pengulangan)
       drawNextQuestion(playerName) {
         while (this.sessionQueue.length > 0) {
-          const candidate = this.sessionQueue.shift(); // Hapus dari antrean
-          // Validasi berlapis menggunakan Set ID unik
+          const candidate = this.sessionQueue.shift();
           if (!this.usedQuestionIds.has(candidate.id)) {
-            this.usedQuestionIds.add(candidate.id); // Kunci permanen untuk sesi ini
+            this.usedQuestionIds.add(candidate.id);
 
             // Acak posisi pilihan jawaban (A, B, C, D) sambil menjaga kunci jawaban benar
             const indexedOptions = candidate.pilihan.map((text, idx) => ({
@@ -1155,7 +1185,6 @@
             return preparedQuestion;
           }
         }
-        // Jika antrean kosong, kembalikan null -> memicu notifikasi BANK SOAL HABIS
         return null;
       },
 
@@ -1174,7 +1203,6 @@
     /*************************************************************************
      * BAGIAN 4: KONFIGURASI PAPAN ULAR TANGGA & LOGIKA PERMAINAN
      *************************************************************************/
-    // Definisi Tangga (Naik) dan Ular (Turun) pada Papan 1 - 100
     const LADDERS = {
       4: 25,
       13: 46,
@@ -1220,10 +1248,10 @@
     function getCellCenterPercent(cellNumber) {
       const clamped = Math.max(1, Math.min(100, cellNumber));
       const zeroIdx = clamped - 1;
-      const rowFromBottom = Math.floor(zeroIdx / 10); // 0..9
-      const colInRow = zeroIdx % 10; // 0..9
+      const rowFromBottom = Math.floor(zeroIdx / 10);
+      const colInRow = zeroIdx % 10;
       const visualCol = (rowFromBottom % 2 === 0) ? colInRow : (9 - colInRow);
-      const visualRow = 9 - rowFromBottom; // 0 di atas, 9 di bawah
+      const visualRow = 9 - rowFromBottom;
 
       return {
         x: (visualCol + 0.5) * 10,
@@ -1277,7 +1305,6 @@
       const svg = document.getElementById('boardOverlaySvg');
       let svgContent = '';
 
-      // Gambar Tangga (Hijau)
       Object.entries(LADDERS).forEach(([startStr, end]) => {
         const s = getCellCenterPercent(parseInt(startStr, 10));
         const e = getCellCenterPercent(end);
@@ -1289,7 +1316,6 @@
         `;
       });
 
-      // Gambar Ular (Merah Melengkung)
       Object.entries(SNAKES).forEach(([headStr, tail]) => {
         const h = getCellCenterPercent(parseInt(headStr, 10));
         const t = getCellCenterPercent(tail);
@@ -1334,7 +1360,7 @@
     function showBoardMoveBanner(text, colorClass = 'from-indigo-600 to-sky-600') {
       const banner = document.getElementById('boardMoveBanner');
       if (!banner) return;
-      banner.className = `mb-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r ${colorClass} text-white font-display font-bold text-xs sm:text-base xl:text-lg text-center shadow-md animate-pop`;
+      banner.className = `absolute top-2 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-xl px-3.5 py-1.5 rounded-2xl bg-gradient-to-r ${colorClass} text-white font-display font-bold text-xs sm:text-sm xl:text-base text-center shadow-lg animate-pop pointer-events-none`;
       banner.textContent = text;
       banner.classList.remove('hidden');
     }
@@ -1343,6 +1369,23 @@
       const banner = document.getElementById('boardMoveBanner');
       if (banner) banner.classList.add('hidden');
     }
+
+    // Sesuaikan ukuran kotak papan persegi agar pas 100% di dalam ruang tersisa layar IFP tanpa scroll
+    function fitBoardToViewport() {
+      const wrapper = document.getElementById('boardCardWrapper');
+      const square = document.getElementById('boardSquareContainer');
+      if (!wrapper || !square || !document.body.classList.contains('game-fullscreen-mode')) return;
+      const rect = wrapper.getBoundingClientRect();
+      const style = window.getComputedStyle(wrapper);
+      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const availW = Math.max(180, rect.width - padX);
+      const availH = Math.max(180, rect.height - padY);
+      const size = Math.floor(Math.min(availW, availH));
+      square.style.width = `${size}px`;
+      square.style.height = `${size}px`;
+    }
+    window.addEventListener('resize', fitBoardToViewport);
 
     /*************************************************************************
      * BAGIAN 5: KONTROL SETUP & ALUR GILIRAN PERMAINAN
@@ -1366,7 +1409,6 @@
       const container = document.getElementById('playerNamesContainer');
       container.innerHTML = '';
 
-      // Mode khusus 4 siswa: Pemain 1, Pemain 2, Pemain 3, Pemain 4
       for (let idx = 0; idx < 4; idx++) {
         const theme = PLAYER_THEMES[idx];
         const div = document.createElement('div');
@@ -1402,7 +1444,6 @@
         return;
       }
 
-      // Siapkan tepat 4 siswa (Pemain 1 s/d Pemain 4) di posisi awal petak 1
       const inputs = document.querySelectorAll('.player-name-input');
       const players = [];
       for (let idx = 0; idx < 4; idx++) {
@@ -1423,25 +1464,28 @@
       gameState = {
         active: true,
         players,
-        currentPlayerIndex: 0, // Mulai dari Pemain 1 (indeks 0)
+        currentPlayerIndex: 0,
         pendingDiceRoll: 0,
         activeQuestion: null,
         lastAnswerCorrect: false,
-        isAnimating: false
+        isAnimating: false,
+        quizTimerInterval: null,
+        quizElapsedSeconds: 0
       };
 
-      // Update label filter sesi
       const kelasLabel = kelas === 'ALL' ? 'Semua Kelas' : `Kelas ${kelas} SD`;
       const mapelLabel = mapel === 'ALL' ? 'Semua Mapel' : mapel;
       document.getElementById('badgeSessionFilter').textContent = `4 Siswa • ${kelasLabel} • ${mapelLabel}`;
 
       document.getElementById('setupPanel').classList.add('hidden');
       document.getElementById('arenaPanel').classList.remove('hidden');
+      document.body.classList.add('game-fullscreen-mode');
 
       hideBoardMoveBanner();
       const bigDiceOverlay = document.getElementById('boardBigDiceOverlay');
       if (bigDiceOverlay) bigDiceOverlay.classList.add('hidden');
       renderBoard();
+      fitBoardToViewport();
       renderPawns();
       updateArenaUI();
     }
@@ -1460,6 +1504,7 @@
               closeModal('systemDialogModal');
               gameState.active = false;
               gameState.isAnimating = false;
+              document.body.classList.remove('game-fullscreen-mode');
               document.getElementById('arenaPanel').classList.add('hidden');
               document.getElementById('setupPanel').classList.remove('hidden');
             }
@@ -1497,38 +1542,31 @@
         return `
           <div
             ${isCurrent ? 'onclick="handleRollDice()"' : ''}
-            class="ifp-touch-target p-2 sm:p-2.5 xl:p-3 rounded-2xl border-2 transition-all flex flex-col justify-between min-w-0 ${isCurrent ? `${p.theme.border} ${p.theme.light} shadow-md ring-2 ${p.theme.ring} cursor-pointer` : 'border-slate-200 bg-white opacity-90'}"
+            class="ifp-touch-target p-1.5 sm:p-2 xl:p-2.5 rounded-xl border-2 transition-all flex flex-col justify-between min-w-0 ${isCurrent ? `${p.theme.border} ${p.theme.light} shadow-md ring-2 ${p.theme.ring} cursor-pointer` : 'border-slate-200 bg-white opacity-90'}"
           >
-            <div>
-              <!-- Baris Atas Kartu: Pion, Warna & Indikator Giliran -->
-              <div class="flex items-center justify-between gap-1 mb-1">
-                <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                  <span class="w-6 h-6 sm:w-7 sm:h-7 xl:w-9 xl:h-9 rounded-xl ${p.theme.bg} text-white flex items-center justify-center text-xs sm:text-sm xl:text-base shadow-sm shrink-0">${p.theme.avatar}</span>
-                  <span class="text-[10px] sm:text-xs xl:text-sm font-extrabold ${p.theme.text} truncate">${p.theme.colorName}</span>
-                </div>
-                ${isCurrent
-                  ? `<span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${p.theme.bg} text-white shrink-0 animate-pulse">GILIRAN</span>`
-                  : `<span class="text-[9px] sm:text-[10px] font-bold text-slate-400 shrink-0">#${p.turnNumber}</span>`
-                }
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-5 h-5 sm:w-6 sm:h-6 xl:w-7 xl:h-7 rounded-lg ${p.theme.bg} text-white flex items-center justify-center text-xs sm:text-sm shadow-sm shrink-0">${p.theme.avatar}</span>
+                <span class="font-display font-bold text-xs sm:text-sm xl:text-base text-slate-900 truncate" title="${p.name}">${p.name}</span>
               </div>
-
-              <!-- Nama Siswa -->
-              <div class="font-display font-bold text-xs sm:text-sm xl:text-base text-slate-900 truncate" title="${p.name}">
-                ${p.name}
-              </div>
+              ${isCurrent
+                ? `<span class="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded ${p.theme.bg} text-white shrink-0 animate-pulse">GILIRAN</span>`
+                : `<span class="text-[9px] sm:text-[10px] font-bold ${p.theme.text} shrink-0">${p.theme.colorName}</span>`
+              }
             </div>
 
             <!-- Posisi Petak & Statistik Benar/Salah -->
-            <div class="mt-1 pt-1 border-t border-slate-200/70 flex items-center justify-between gap-1">
-              <span class="font-display font-bold text-xs sm:text-sm xl:text-base text-indigo-700">Petak ${p.position}</span>
-              <div class="flex items-center gap-1 text-[9px] sm:text-[11px] font-bold">
-                <span class="text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded">✓${p.correctCount}</span>
-                <span class="text-rose-700 bg-rose-100/80 px-1.5 py-0.5 rounded">✕${p.wrongCount}</span>
+            <div class="mt-1 pt-0.5 border-t border-slate-200/70 flex items-center justify-between gap-1">
+              <span class="font-display font-bold text-[11px] sm:text-xs xl:text-sm text-indigo-700">Petak ${p.position}</span>
+              <div class="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold">
+                <span class="text-emerald-700 bg-emerald-100/80 px-1 py-0.5 rounded">✓${p.correctCount}</span>
+                <span class="text-rose-700 bg-rose-100/80 px-1 py-0.5 rounded">✕${p.wrongCount}</span>
               </div>
             </div>
           </div>
         `;
       }).join('');
+      fitBoardToViewport();
     }
 
     // Lempar Dadu Kecil di Bawah -> Munculkan Dadu Besar di Tengah Papan -> Buka Soal
@@ -1537,7 +1575,6 @@
 
       const current = gameState.players[gameState.currentPlayerIndex];
 
-      // Cek apakah bank soal sesi sudah habis sebelum melempar dadu
       if (SessionQuizEngine.getRemainingCount() === 0) {
         handleBankSoalHabis();
         return;
@@ -1548,7 +1585,7 @@
       if (rollBtn) rollBtn.disabled = true;
       AudioEngine.dice();
 
-      // Tampilkan Dadu Besar tepat di tengah papan ular tangga
+      // Tampilkan Dadu Besar Transparan tepat di tengah papan ular tangga
       const bigOverlay = document.getElementById('boardBigDiceOverlay');
       const bigPlayerLabel = document.getElementById('bigDicePlayerLabel');
       const bigStatusText = document.getElementById('bigDiceStatusText');
@@ -1576,7 +1613,6 @@
           gameState.pendingDiceRoll = finalDice;
           bigStatusText.textContent = `Angka dadu keluar: ${finalDice} langkah!`;
 
-          // Ambil 1 soal unik dari antrean sesi bersama (otomatis dikunci di usedQuestionIds)
           const nextQuestion = SessionQuizEngine.drawNextQuestion(current.name);
           if (!nextQuestion) {
             bigOverlay.classList.add('hidden');
@@ -1656,18 +1692,15 @@
 
       stopQuizTimer();
 
-      // Kunci semua tombol pilihan agar jawaban tidak bisa diubah
       const allBtns = document.querySelectorAll('.quiz-opt-btn');
       allBtns.forEach(btn => btn.disabled = true);
 
       const isCorrect = selectedIdx === q.shuffledJawaban;
       gameState.lastAnswerCorrect = isCorrect;
 
-      // Perbarui status log riwayat anti-pengulangan
       SessionQuizEngine.updateLastHistoryStatus(q.id, isCorrect);
       updateArenaUI();
 
-      // Sorot tombol benar & salah
       const labels = ['A', 'B', 'C', 'D'];
       allBtns.forEach((btn, idx) => {
         if (idx === q.shuffledJawaban) {
@@ -1750,9 +1783,8 @@
         current.correctCount += 1;
         current.score += 10;
 
-        // Jalankan animasi langkah pion satu per satu di papan sehingga siswa melihat jelas pergerakan pionnya
         let stepsLeft = gameState.pendingDiceRoll;
-        let direction = 1; // +1 maju, -1 pantul balik jika melebihi 100
+        let direction = 1;
         let stepCount = 0;
 
         showBoardMoveBanner(
@@ -1779,7 +1811,6 @@
           } else {
             clearInterval(stepInterval);
 
-            // Setelah langkah selesai, beri jeda sejenak agar siswa melihat posisi pendaratan, lalu cek Tangga / Ular
             setTimeout(() => {
               if (LADDERS[current.position]) {
                 const dest = LADDERS[current.position];
@@ -1830,7 +1861,6 @@
       hideBoardMoveBanner();
       renderPawns();
 
-      // Cek Kemenangan (Siswa pertama yang mencapai petak 100)
       if (current.position === 100) {
         AudioEngine.win();
         gameState.active = false;
@@ -1854,6 +1884,7 @@
               primary: false,
               action: () => {
                 closeModal('systemDialogModal');
+                document.body.classList.remove('game-fullscreen-mode');
                 document.getElementById('arenaPanel').classList.add('hidden');
                 document.getElementById('setupPanel').classList.remove('hidden');
               }
@@ -1871,21 +1902,18 @@
       gameState.activeQuestion = null;
       gameState.isAnimating = false;
 
-      // Jika antrean soal habis tepat setelah giliran ini, langsung beritahu
       if (SessionQuizEngine.getRemainingCount() === 0) {
         updateArenaUI();
         handleBankSoalHabis();
         return;
       }
 
-      // Rotasi giliran berurutan: Pemain 1 (0) -> Pemain 2 (1) -> Pemain 3 (2) -> Pemain 4 (3) -> kembali ke Pemain 1 (0)
       gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % 4;
       const miniDiceIcon = document.getElementById('miniDiceIcon');
       if (miniDiceIcon) miniDiceIcon.textContent = '🎲';
       updateArenaUI();
     }
 
-    // Handler Wajib Saat Bank Soal Sesi Habis (Dilarang Mengulang Soal Diam-Diam)
     function handleBankSoalHabis() {
       gameState.active = false;
       gameState.isAnimating = false;
@@ -1910,6 +1938,7 @@
             primary: false,
             action: () => {
               closeModal('systemDialogModal');
+              document.body.classList.remove('game-fullscreen-mode');
               document.getElementById('arenaPanel').classList.add('hidden');
               document.getElementById('setupPanel').classList.remove('hidden');
             }
@@ -1931,14 +1960,19 @@
       if (viewName === 'game') {
         viewGame.classList.remove('hidden');
         viewTeacher.classList.add('hidden');
-        btnGame.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer';
-        btnTeacher.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5';
+        if (gameState.active) {
+          document.body.classList.add('game-fullscreen-mode');
+          setTimeout(fitBoardToViewport, 30);
+        }
+        btnGame.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer';
+        btnTeacher.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5';
         updateFilteredCountPreview();
       } else {
+        document.body.classList.remove('game-fullscreen-mode');
         viewGame.classList.add('hidden');
         viewTeacher.classList.remove('hidden');
-        btnTeacher.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer flex items-center gap-1.5';
-        btnGame.className = 'px-3.5 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer';
+        btnTeacher.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer flex items-center gap-1.5';
+        btnGame.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer';
         renderTeacherStats();
         renderTeacherTable();
       }
@@ -1978,7 +2012,7 @@
 
       const tbody = document.getElementById('teacherTableBody');
       const labels = ['A', 'B', 'C', 'D'];
-      const displaySlice = filtered.slice(0, 100); // Render maksimal 100 baris agar tetap super cepat
+      const displaySlice = filtered.slice(0, 100);
 
       tbody.innerHTML = displaySlice.map(q => `
         <tr class="hover:bg-slate-50/80 align-top">
@@ -2014,7 +2048,6 @@
         `Menampilkan ${displaySlice.length} dari ${filtered.length} soal terfilter (Total Bank Soal: ${masterQuestionBank.length})`;
     }
 
-    // Deteksi kemiripan teks pertanyaan untuk mencegah duplikasi
     function findSimilarQuestion(text, ignoreId = '') {
       const normalized = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
       if (normalized.length < 8) return null;
@@ -2024,7 +2057,6 @@
         const qNorm = q.pertanyaan.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
         if (qNorm === normalized) return q;
 
-        // Cek kemiripan kata (Jaccard similarity sederhana)
         const setA = new Set(normalized.split(/\s+/));
         const setB = new Set(qNorm.split(/\s+/));
         let intersection = 0;
@@ -2115,7 +2147,6 @@
         return;
       }
 
-      // Cek keunikan ID saat menambah soal baru
       if (!originalId && masterQuestionBank.some(q => q.id === id)) {
         showSystemDialog('🚫', 'ID Soal Sudah Terpakai', `ID "${id}" sudah ada di dalam database. Gunakan ID unik lainnya.`, [
           { label: 'Ganti ID', primary: true, action: () => closeModal('systemDialogModal') }
@@ -2123,7 +2154,6 @@
         return;
       }
 
-      // Peringatan duplikasi sebelum disimpan
       if (!forceSave) {
         const similar = findSimilarQuestion(pertanyaan, originalId);
         if (similar) {
@@ -2222,6 +2252,51 @@
     function openImportJsonModal() {
       document.getElementById('jsonImportTextarea').value = '';
       document.getElementById('importJsonModal').classList.remove('hidden');
+    }
+
+    function getSampleJsonTemplateData() {
+      const stamp = Date.now().toString().slice(-4);
+      return [
+        {
+          id: `GURU-MTK-${stamp}-01`,
+          kelas: 4,
+          mapel: "Matematika",
+          materi: "Operasi Hitung Campuran",
+          tingkat: "Mudah",
+          pertanyaan: "Berapakah hasil dari (15 + 5) x 3?",
+          pilihan: ["30", "45", "60", "75"],
+          jawaban: 2,
+          pembahasan: "Kerjakan di dalam kurung dahulu: 15 + 5 = 20, lalu 20 x 3 = 60."
+        },
+        {
+          id: `GURU-IPAS-${stamp}-02`,
+          kelas: 4,
+          mapel: "IPAS",
+          materi: "Bagian Tumbuhan",
+          tingkat: "Sedang",
+          pertanyaan: "Bagian tumbuhan yang berfungsi sebagai tempat berlangsungnya fotosintesis adalah...",
+          pilihan: ["Akar", "Batang", "Daun", "Biji"],
+          jawaban: 2,
+          pembahasan: "Daun mengandung klorofil (zat hijau daun) untuk melakukan fotosintesis."
+        }
+      ];
+    }
+
+    function fillImportTemplate() {
+      const sample = getSampleJsonTemplateData();
+      document.getElementById('jsonImportTextarea').value = JSON.stringify(sample, null, 2);
+    }
+
+    function downloadJsonTemplate() {
+      const sample = getSampleJsonTemplateData();
+      const dataStr = JSON.stringify(sample, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template_soal_sdn_kesilir_02.json';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function processJsonImport() {
