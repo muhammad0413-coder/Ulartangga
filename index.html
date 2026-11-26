@@ -19,7 +19,8 @@
       display: grid;
       grid-template-columns: repeat(10, 1fr);
       grid-template-rows: repeat(10, 1fr);
-      aspect-ratio: 1 / 1;
+      width: 100%;
+      height: 100%;
     }
     .board-cell {
       position: relative;
@@ -75,29 +76,29 @@
       0% { opacity: 0; transform: scale(0.9) translateY(10px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
-    .animate-pop {
-      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    /* Mode Layar Penuh 1 Layar Utuh untuk IFP saat bermain */
-    body.game-fullscreen-mode {
+    /* Mode Layar Penuh 1 Layar Utuh untuk IFP (Setup & Arena Permainan) */
+    body.ifp-one-screen {
       height: 100dvh;
+      max-height: 100dvh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
-    body.game-fullscreen-mode main {
+    body.ifp-one-screen main {
       flex: 1 1 0%;
       min-height: 0;
       display: flex;
       flex-direction: column;
       padding-top: 0.4rem !important;
       padding-bottom: 0.4rem !important;
+      overflow: hidden;
     }
-    body.game-fullscreen-mode #viewGame {
+    body.ifp-one-screen #viewGame {
       flex: 1 1 0%;
       min-height: 0;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
     /* Custom scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -106,7 +107,7 @@
     ::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900">
+<body class="ifp-one-screen text-slate-800 antialiased selection:bg-sky-200 selection:text-sky-900">
 
   <!-- HEADER UTAMA -->
   <header id="mainHeader" class="bg-white/90 backdrop-blur-md border-b border-sky-100 sticky top-0 z-30 shadow-sm shrink-0">
@@ -126,6 +127,9 @@
       </div>
 
       <nav class="flex items-center gap-2">
+        <button id="fullscreenToggleBtn" onclick="toggleIfpFullscreen()" class="ifp-touch-target hidden sm:inline-flex px-3 py-2 xl:px-3.5 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-amber-100 text-amber-900 hover:bg-amber-200 transition cursor-pointer items-center gap-1">
+          ⛶ Layar Penuh
+        </button>
         <button id="navGameBtn" onclick="switchView('game')" class="ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer">
           🎮 Arena Permainan
         </button>
@@ -138,31 +142,31 @@
   </header>
 
   <!-- KONTEN UTAMA -->
-  <main class="w-full max-w-[1680px] mx-auto px-2.5 sm:px-5 xl:px-7 py-4">
+  <main class="w-full max-w-[1680px] mx-auto px-2.5 sm:px-5 xl:px-7 py-2">
 
     <!-- =========================================================
          VIEW 1: SETUP & ARENA PERMAINAN
     ========================================================== -->
-    <section id="viewGame" class="space-y-4">
+    <section id="viewGame" class="flex-1 min-h-0 flex flex-col">
 
-      <!-- PANEL PENGATURAN SESI BARU -->
-      <div id="setupPanel" class="bg-white rounded-3xl p-5 sm:p-7 xl:p-9 shadow-lg border border-sky-100 animate-pop">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 xl:pb-5 border-b border-slate-100 mb-5 xl:mb-6">
+      <!-- PANEL PENGATURAN SESI BARU (1 LAYAR FULL TANPA SCROLL DI IFP) -->
+      <div id="setupPanel" class="bg-white rounded-3xl p-4 sm:p-5 xl:p-7 shadow-lg border border-sky-100 animate-pop flex-1 min-h-0 flex flex-col justify-between overflow-y-auto lg:overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 xl:pb-4 border-b border-slate-100 shrink-0">
           <div>
-            <h2 class="text-xl sm:text-2xl xl:text-3xl font-bold text-slate-900">Pengaturan Petualangan Kuis (Layar IFP)</h2>
-            <p class="text-sm xl:text-base text-slate-500">Pilih jenjang kelas, mata pelajaran, dan isi nama 4 siswa. Sistem menjamin 0% soal berulang dalam 1 sesi!</p>
+            <h2 class="text-lg sm:text-xl xl:text-2xl font-bold text-slate-900">Pengaturan Petualangan Kuis (1 Layar Full IFP)</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Pilih jenjang kelas, mata pelajaran, dan isi nama 4 siswa. Sistem menjamin 0% soal berulang dalam 1 sesi!</p>
           </div>
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-xs xl:text-sm font-semibold">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-xs font-semibold shrink-0">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Anti-Duplikasi Aktif
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5 mb-6 xl:mb-7">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-4 my-2 shrink-0">
           <!-- Filter Kelas -->
-          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">1. Jenjang Kelas</label>
-            <select id="cfgKelas" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-3 xl:p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-[11px] xl:text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">1. Jenjang Kelas</label>
+            <select id="cfgKelas" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-2.5 xl:p-3 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Kelas (1 - 6 SD)</option>
               <option value="1">Kelas 1 SD</option>
               <option value="2">Kelas 2 SD</option>
@@ -174,9 +178,9 @@
           </div>
 
           <!-- Filter Mata Pelajaran -->
-          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">2. Mata Pelajaran</label>
-            <select id="cfgMapel" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-3 xl:p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-[11px] xl:text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">2. Mata Pelajaran</label>
+            <select id="cfgMapel" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-2.5 xl:p-3 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Mata Pelajaran (8 Mapel)</option>
               <option value="Matematika">Matematika</option>
               <option value="Bahasa Indonesia">Bahasa Indonesia</option>
@@ -190,9 +194,9 @@
           </div>
 
           <!-- Filter Tingkat Kesulitan -->
-          <div class="bg-slate-50 p-4 xl:p-5 rounded-2xl border border-slate-200/70">
-            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">3. Tingkat Kesulitan</label>
-            <select id="cfgTingkat" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-3 xl:p-3.5 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+          <div class="bg-slate-50 p-3 xl:p-4 rounded-2xl border border-slate-200/70">
+            <label class="block text-[11px] xl:text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">3. Tingkat Kesulitan</label>
+            <select id="cfgTingkat" onchange="updateFilteredCountPreview()" class="ifp-touch-target w-full p-2.5 xl:p-3 rounded-xl bg-white border border-slate-300 text-sm xl:text-base font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
               <option value="ALL">Semua Tingkat (Mudah - Sulit)</option>
               <option value="Mudah">Mudah</option>
               <option value="Sedang">Sedang</option>
@@ -201,41 +205,42 @@
           </div>
 
           <!-- Mode Permainan Khusus 4 Siswa -->
-          <div class="bg-sky-50 p-4 xl:p-5 rounded-2xl border border-sky-200/80 flex flex-col justify-center">
-            <label class="block text-xs xl:text-sm font-bold uppercase tracking-wider text-sky-700 mb-1.5">4. Mode Pertandingan</label>
-            <div class="font-display font-bold text-base xl:text-xl text-slate-900 flex items-center gap-2">
+          <div class="bg-sky-50 p-3 xl:p-4 rounded-2xl border border-sky-200/80 flex flex-col justify-center">
+            <label class="block text-[11px] xl:text-xs font-bold uppercase tracking-wider text-sky-700 mb-1">4. Mode Pertandingan</label>
+            <div class="font-display font-bold text-base xl:text-lg text-slate-900 flex items-center gap-2">
               <span>👥 Khusus 4 Siswa</span>
             </div>
-            <p class="text-xs xl:text-sm text-slate-600 mt-1">4 Pion berbeda • Start Petak 1 • 1 Bank Soal Bersama</p>
+            <p class="text-[11px] xl:text-xs text-slate-600 mt-0.5">4 Pion berbeda • Start Petak 1 • 1 Bank Soal</p>
           </div>
         </div>
 
         <!-- Input Nama 4 Siswa -->
-        <div class="mb-2.5 flex items-center justify-between">
-          <span class="text-xs xl:text-sm font-bold uppercase tracking-wider text-slate-500">Masukkan Nama Keempat Siswa (Urutan Giliran 1 → 2 → 3 → 4)</span>
+        <div class="my-1 shrink-0">
+          <div class="mb-1.5 flex items-center justify-between">
+            <span class="text-[11px] xl:text-xs font-bold uppercase tracking-wider text-slate-500">Masukkan Nama Keempat Siswa (Urutan Giliran 1 → 2 → 3 → 4)</span>
+          </div>
+          <div id="playerNamesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 xl:gap-3.5"></div>
         </div>
-        <div id="playerNamesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-4 mb-6 xl:mb-8"></div>
 
         <!-- Preview Jumlah Soal & Tombol Mulai -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 xl:pt-5 border-t border-slate-100">
-          <div class="flex items-center gap-3 text-sm xl:text-base">
-            <div class="px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-800 font-semibold border border-indigo-100">
-              Stok Soal Terfilter: <span id="filteredStockCount" class="font-bold text-indigo-600 text-base xl:text-xl">50</span> soal unik siap diacak
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 shrink-0">
+          <div class="flex items-center gap-3 text-xs sm:text-sm xl:text-base">
+            <div class="px-3.5 py-2 rounded-xl bg-indigo-50 text-indigo-800 font-semibold border border-indigo-100">
+              Stok Soal Terfilter: <span id="filteredStockCount" class="font-bold text-indigo-600 text-base xl:text-lg">50</span> soal unik siap diacak
             </div>
           </div>
-          <button onclick="startNewGameSession()" class="ifp-touch-target w-full sm:w-auto px-8 py-4 xl:px-10 xl:py-4 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-display font-bold text-lg xl:text-xl shadow-lg shadow-sky-500/30 transition transform active:scale-95 cursor-pointer">
+          <button onclick="startNewGameSession()" class="ifp-touch-target w-full sm:w-auto px-7 py-3 xl:px-9 xl:py-3.5 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-display font-bold text-base xl:text-lg shadow-lg shadow-sky-500/30 transition transform active:scale-95 cursor-pointer">
             🚀 Mulai Petualangan Sekarang
           </button>
         </div>
       </div>
 
       <!-- PANEL ARENA PERMAINAN (1 LAYAR FULL IFP TANPA SCROLL ATAS-BAWAH) -->
-      <div id="arenaPanel" class="hidden flex-1 min-h-0 flex flex-col justify-between gap-1.5 sm:gap-2 overflow-hidden">
-
-        <!-- BAR STATUS RINGKAS DI ATAS PAPAN -->
-        <div class="bg-white/95 px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl shadow-xs border border-sky-100 flex items-center justify-between gap-2 text-[11px] sm:text-xs xl:text-sm shrink-0">
+      <div id="arenaPanel" class="hidden flex-1 min-h-0 flex flex-col justify-between gap-1 sm:gap-1.5 overflow-hidden">
+        <!-- Bar Status Sesi Ringkas -->
+        <div class="bg-white/95 px-3 py-1 rounded-xl shadow-xs border border-sky-100 flex items-center justify-between gap-2 text-xs shrink-0">
           <div class="flex items-center gap-2 min-w-0">
-            <span id="badgeSessionFilter" class="px-2.5 py-0.5 rounded-lg bg-sky-100 text-sky-800 font-bold truncate">4 Siswa • Kelas 4 SD</span>
+            <span id="badgeSessionFilter" class="px-2.5 py-0.5 rounded-lg bg-sky-100 text-sky-800 font-bold truncate">4 Siswa • Kelas 4 SD • Semua Mapel</span>
             <span id="usedCountBadge" class="hidden sm:inline-block px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold shrink-0">🛡️ 0 Terpakai</span>
           </div>
           <button onclick="confirmRestartSession()" class="ifp-touch-target px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition cursor-pointer shrink-0">
@@ -243,17 +248,17 @@
           </button>
         </div>
 
-        <!-- BAGIAN TENGAH: PAPAN ULAR TANGGA UTAMA (OTOMATIS MENYESUAIKAN SISA TINGGI LAYAR) -->
-        <div id="boardCardWrapper" class="bg-white p-1.5 sm:p-2 xl:p-2.5 rounded-2xl shadow-md border border-sky-100 w-full flex-1 min-h-0 flex flex-col items-center justify-center relative overflow-hidden">
+        <!-- BAGIAN TENGAH: PAPAN ULAR TANGGA FULL LEBAR & TINGGI LAYAR IFP -->
+        <div id="boardCardWrapper" class="bg-white p-1 sm:p-1.5 rounded-2xl shadow-md border border-sky-100 w-full flex-1 min-h-0 flex flex-col items-center justify-center relative overflow-hidden">
           <!-- Banner Status Pergerakan Pion Mengambang di Atas Papan -->
           <div id="boardMoveBanner" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-xl px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 text-white font-display font-bold text-xs sm:text-sm xl:text-base text-center shadow-lg animate-pop pointer-events-none">
             🦁 Siswa 1 melangkah maju!
           </div>
 
-          <div id="boardSquareContainer" class="relative aspect-square h-full max-h-full max-w-full mx-auto rounded-xl overflow-hidden border-2 xl:border-[3px] border-slate-800 shadow-inner bg-amber-50">
+          <div id="boardSquareContainer" class="relative w-full h-full rounded-xl overflow-hidden border-2 xl:border-[3px] border-slate-800 shadow-inner bg-amber-50">
             <div id="boardGrid" class="board-grid w-full h-full"></div>
             <!-- SVG Garis Ular & Tangga -->
-            <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+            <svg id="boardOverlaySvg" viewBox="0 0 1000 1000" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
             <!-- Layer Bidak Pemain -->
             <div id="pawnsLayer" class="absolute inset-0 w-full h-full pointer-events-none z-20"></div>
 
@@ -1370,22 +1375,31 @@
       if (banner) banner.classList.add('hidden');
     }
 
-    // Sesuaikan ukuran kotak papan persegi agar pas 100% di dalam ruang tersisa layar IFP tanpa scroll
+    // Sesuaikan ukuran papan agar memenuhi seluruh lebar dan tinggi ruang tersisa layar IFP
     function fitBoardToViewport() {
-      const wrapper = document.getElementById('boardCardWrapper');
       const square = document.getElementById('boardSquareContainer');
-      if (!wrapper || !square || !document.body.classList.contains('game-fullscreen-mode')) return;
-      const rect = wrapper.getBoundingClientRect();
-      const style = window.getComputedStyle(wrapper);
-      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-      const availW = Math.max(180, rect.width - padX);
-      const availH = Math.max(180, rect.height - padY);
-      const size = Math.floor(Math.min(availW, availH));
-      square.style.width = `${size}px`;
-      square.style.height = `${size}px`;
+      if (!square) return;
+      square.style.width = '100%';
+      square.style.height = '100%';
     }
     window.addEventListener('resize', fitBoardToViewport);
+    document.addEventListener('fullscreenchange', () => {
+      setTimeout(fitBoardToViewport, 80);
+      const btn = document.getElementById('fullscreenToggleBtn');
+      if (btn) {
+        btn.textContent = document.fullscreenElement ? '🗗 Keluar Layar Penuh' : '⛶ Layar Penuh';
+      }
+    });
+
+    function toggleIfpFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
 
     /*************************************************************************
      * BAGIAN 5: KONTROL SETUP & ALUR GILIRAN PERMAINAN
@@ -1479,15 +1493,24 @@
 
       document.getElementById('setupPanel').classList.add('hidden');
       document.getElementById('arenaPanel').classList.remove('hidden');
-      document.body.classList.add('game-fullscreen-mode');
+      document.body.classList.add('ifp-one-screen');
+
+      // Otomatis minta mode layar penuh browser di IFP saat mulai bermain jika belum aktif
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } catch (e) {}
 
       hideBoardMoveBanner();
       const bigDiceOverlay = document.getElementById('boardBigDiceOverlay');
       if (bigDiceOverlay) bigDiceOverlay.classList.add('hidden');
       renderBoard();
-      fitBoardToViewport();
-      renderPawns();
-      updateArenaUI();
+      requestAnimationFrame(() => {
+        fitBoardToViewport();
+        renderPawns();
+        updateArenaUI();
+      });
     }
 
     function confirmRestartSession() {
@@ -1504,7 +1527,7 @@
               closeModal('systemDialogModal');
               gameState.active = false;
               gameState.isAnimating = false;
-              document.body.classList.remove('game-fullscreen-mode');
+              document.body.classList.add('ifp-one-screen');
               document.getElementById('arenaPanel').classList.add('hidden');
               document.getElementById('setupPanel').classList.remove('hidden');
             }
@@ -1884,7 +1907,7 @@
               primary: false,
               action: () => {
                 closeModal('systemDialogModal');
-                document.body.classList.remove('game-fullscreen-mode');
+                document.body.classList.add('ifp-one-screen');
                 document.getElementById('arenaPanel').classList.add('hidden');
                 document.getElementById('setupPanel').classList.remove('hidden');
               }
@@ -1938,7 +1961,7 @@
             primary: false,
             action: () => {
               closeModal('systemDialogModal');
-              document.body.classList.remove('game-fullscreen-mode');
+              document.body.classList.add('ifp-one-screen');
               document.getElementById('arenaPanel').classList.add('hidden');
               document.getElementById('setupPanel').classList.remove('hidden');
             }
@@ -1960,15 +1983,15 @@
       if (viewName === 'game') {
         viewGame.classList.remove('hidden');
         viewTeacher.classList.add('hidden');
+        document.body.classList.add('ifp-one-screen');
         if (gameState.active) {
-          document.body.classList.add('game-fullscreen-mode');
-          setTimeout(fitBoardToViewport, 30);
+          requestAnimationFrame(fitBoardToViewport);
         }
         btnGame.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer';
         btnTeacher.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer flex items-center gap-1.5';
         updateFilteredCountPreview();
       } else {
-        document.body.classList.remove('game-fullscreen-mode');
+        document.body.classList.remove('ifp-one-screen');
         viewGame.classList.add('hidden');
         viewTeacher.classList.remove('hidden');
         btnTeacher.className = 'ifp-touch-target px-3.5 py-2 xl:px-4 xl:py-2 rounded-xl text-xs sm:text-sm font-semibold bg-sky-600 text-white shadow-sm hover:bg-sky-700 transition cursor-pointer flex items-center gap-1.5';
